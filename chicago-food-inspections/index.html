@@ -4,7 +4,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="A data-driven investigation into Chicago food inspection pass rates, the 2018 rule change, and the gaps in the city's inspection system." />
   <title>Chicago's 2018 Pass-Rate Cliff — A Data Story</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -60,7 +59,6 @@
       </figcaption>
     </figure>
 
-    <!-- SECTION 2 -->
     <section class="prose">
       <h2>The July 2018 Cliff</h2>
       <p>
@@ -88,7 +86,6 @@
       </figcaption>
     </figure>
 
-    <!-- SECTION 3 -->
     <section class="prose">
       <h2>Different Sectors, Different Recoveries</h2>
       <p>
@@ -120,7 +117,6 @@
       </figcaption>
     </figure>
 
-    <!-- SECTION 4 -->
     <section class="prose">
       <h2>What Happens on Day One?</h2>
       <p>
@@ -143,25 +139,22 @@
       <p>
         The breakdown varies sharply by license type. Mobile food vendors — food
         trucks and carts — fare better, with 59 out of 100 passing cleanly.
-        These operators tend to have simpler, smaller setups with fewer potential
-        violation points. Wholesale food establishments tell the opposite story:
-        only 48 out of 100 pass, while <strong>51 fail</strong> — a majority of
-        new wholesale businesses can't clear the bar on their first attempt.
+        Wholesale food establishments tell the opposite story: only 48 out of 100
+        pass, while <strong>51 fail</strong> — a majority of new wholesale
+        businesses can't clear the bar on their first attempt.
       </p>
     </section>
 
     <figure class="viz" id="pictograph">
       <iframe src="charts/pictograph_first_inspection.html" loading="lazy"
-        title="Pictograph of first-inspection outcomes by category"></iframe>
+        title="First inspection outcomes by category"></iframe>
       <figcaption>
-        Each square represents 1&percnt; of first-ever inspections in that category.
-        Green squares are clean passes, amber is pass with conditions, and red
-        is fail. Read it like a waffle chart: the more red you see, the harder
-        that category finds it to pass on day one.
+        Each bar shows the share of first-ever inspections ending in Pass (green),
+        Pass with Conditions (amber), or Fail (red) for each license category.
+        The more red, the harder that category finds it to pass on day one.
       </figcaption>
     </figure>
 
-    <!-- SECTION 5 -->
     <section class="prose">
       <h2>The Inspection Blind Spots</h2>
       <p>
@@ -202,7 +195,6 @@
       </figcaption>
     </figure>
 
-    <!-- SECTION 6 -->
     <section class="prose">
       <h2>Where in Chicago Are the Gaps?</h2>
       <p>
@@ -234,7 +226,6 @@
       </figcaption>
     </figure>
 
-    <!-- SECTION 7 -->
     <section class="prose">
       <h2>What This Means for Chicago Diners</h2>
       <p>
@@ -265,7 +256,6 @@
       </p>
     </section>
 
-    <!-- METHODOLOGY -->
     <section class="methodology">
       <h2>Methodology &amp; Sources</h2>
 
@@ -287,9 +277,8 @@
         <a href="https://data.cityofchicago.org/Community-Economic-Development/Business-Licenses/r5kz-chrr"
           target="_blank" rel="noopener">data.cityofchicago.org</a>.
         Filtered server-side via the Socrata API to 14 food-related license categories.
-        Used to compute first-inspection outcomes by license type, identify long-active
-        licenses that have never been inspected, and map uninspected retail food
-        businesses by ZIP code.
+        Used to compute first-inspection outcomes, identify long-active licenses never
+        inspected, and map uninspected retail food businesses by ZIP code.
       </p>
 
       <h3>Geographic boundaries</h3>

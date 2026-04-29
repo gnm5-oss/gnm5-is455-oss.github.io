@@ -14,33 +14,14 @@
   .ctrl-group { display:flex; flex-direction:column; gap:0.35rem; }
   .ctrl-label { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#666; }
 
-  .dropdown-wrapper { position:relative; }
-  .dropdown-trigger {
-    display:flex; align-items:center; justify-content:space-between; gap:0.5rem;
-    padding:0.4rem 0.8rem; border:1.5px solid #ccc; border-radius:6px;
-    background:#fff; cursor:pointer; font-size:0.84rem; font-family:Arial,sans-serif;
-    min-width:240px; user-select:none; color:#333;
+  .pill-row { display:flex; flex-wrap:wrap; gap:0.35rem; }
+  .pill {
+    border:2px solid; border-radius:20px; padding:0.22rem 0.7rem;
+    font-size:0.75rem; cursor:pointer; background:white;
+    transition:background 0.15s, color 0.15s;
+    font-family:Arial,sans-serif; white-space:nowrap;
   }
-  .dropdown-trigger:hover { border-color:#999; }
-  .arrow { font-size:0.6rem; color:#aaa; }
-  .dropdown-menu {
-    display:none; position:absolute; top:calc(100% + 4px); left:0;
-    background:#fff; border:1.5px solid #ddd; border-radius:6px;
-    box-shadow:0 4px 18px rgba(0,0,0,.12); z-index:999;
-    min-width:260px; padding:0.4rem 0; max-height:360px; overflow-y:auto;
-  }
-  .dropdown-menu.open { display:block; }
-  .dropdown-item {
-    display:flex; align-items:center; gap:0.6rem;
-    padding:0.44rem 0.9rem; cursor:pointer;
-    font-size:0.83rem; font-family:Arial,sans-serif; transition:background 0.1s;
-  }
-  .dropdown-item:hover { background:#f5f5f5; }
-  .color-dot { width:11px; height:11px; border-radius:50%; flex-shrink:0; }
-  .dropdown-item input { cursor:pointer; }
-  .dropdown-divider { border:none; border-top:1px solid #eee; margin:0.3rem 0; }
-  .dropdown-action { padding:0.3rem 0.9rem; font-size:0.75rem; color:#c0392b; cursor:pointer; }
-  .dropdown-action:hover { text-decoration:underline; }
+  .pill.on { color:#fff !important; }
 
   .year-row { display:flex; align-items:center; gap:0.5rem; }
   .year-input {
@@ -66,23 +47,12 @@
 <body>
 
 <p class="chart-title">Pass Rate Across 8 Chicago Facility Types, 2010–2025</p>
-<p class="chart-subtitle">Use the controls to focus on specific facility types or a time window. Hover any point for details.</p>
+<p class="chart-subtitle">Click facility pills to show/hide. Adjust year range to zoom in. Hover any point for details.</p>
 
 <div class="controls">
   <div class="ctrl-group">
     <div class="ctrl-label">Facility Type</div>
-    <div class="dropdown-wrapper">
-      <div class="dropdown-trigger" id="dd-trigger" onclick="toggleDropdown()">
-        <span id="dd-label">All 8 facility types</span>
-        <span class="arrow">▼</span>
-      </div>
-      <div class="dropdown-menu" id="dd-menu">
-        <div class="dropdown-action" onclick="selectAll()">✓ Select all</div>
-        <div class="dropdown-action" onclick="clearAll()">✗ Clear all</div>
-        <hr class="dropdown-divider">
-        <div id="dd-items"></div>
-      </div>
-    </div>
+    <div class="pill-row" id="pills"></div>
   </div>
   <div class="ctrl-group">
     <div class="ctrl-label">Year Range</div>
@@ -99,7 +69,7 @@
 
 <div class="warn" id="warn-msg"></div>
 <div id="vis"></div>
-<p class="chart-note">Select/deselect facility types (min 1). Hover any point for exact pass rate and inspection count.</p>
+<p class="chart-note">Click a pill to toggle a facility type (min 1). Hover any point for exact values.</p>
 
 <script src="https://cdn.jsdelivr.net/npm/vega@5/build/vega.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-lite@5/build/vega-lite.min.js"></script>
@@ -110,63 +80,55 @@ const FAC_COLORS = {"Restaurant": "#4E79A7", "Grocery Store": "#F28E2B", "School
 const ALL_FACS   = ["Restaurant", "Grocery Store", "School", "Children's Services Facility", "Bakery", "Daycare Above and Under 2 Years", "Daycare (2 - 6 Years)", "Long Term Care"];
 const YEAR_DOM   = ["2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024", "2025"];
 
-let active = new Set(ALL_FACS);
+let active   = new Set(ALL_FACS);
 let vegaView = null;
 
-// build dropdown
-const ddItems = document.getElementById('dd-items');
+// build pills
+const pillRow = document.getElementById('pills');
 ALL_FACS.forEach(fac => {
-  const item = document.createElement('div');
-  item.className = 'dropdown-item';
-  item.innerHTML = `
-    <input type="checkbox" id="chk-${fac}" checked>
-    <span class="color-dot" style="background:${FAC_COLORS[fac]}"></span>
-    <label for="chk-${fac}" style="cursor:pointer;flex:1">${fac}</label>
-  `;
-  item.querySelector('input').addEventListener('change', e => {
-    if (!e.target.checked && active.size === 1) {
-      e.target.checked = true;
+  const btn = document.createElement('button');
+  btn.className = 'pill on';
+  btn.textContent = fac;
+  btn.dataset.fac = fac;
+  const col = FAC_COLORS[fac];
+  btn.style.borderColor = col;
+  btn.style.backgroundColor = col;
+  btn.style.color = '#fff';
+  btn.addEventListener('click', () => {
+    if (active.has(fac) && active.size === 1) {
       showWarn('At least one facility type must remain selected.');
       return;
     }
     clearWarn();
-    if (e.target.checked) active.add(fac);
-    else active.delete(fac);
-    updateLabel(); redraw();
+    if (active.has(fac)) {
+      active.delete(fac);
+      btn.classList.remove('on');
+      btn.style.backgroundColor = '#fff';
+      btn.style.color = col;
+    } else {
+      active.add(fac);
+      btn.classList.add('on');
+      btn.style.backgroundColor = col;
+      btn.style.color = '#fff';
+    }
+    redraw();
   });
-  ddItems.appendChild(item);
+  pillRow.appendChild(btn);
 });
 
-function toggleDropdown() {
-  document.getElementById('dd-menu').classList.toggle('open');
-}
-document.addEventListener('click', e => {
-  if (!e.target.closest('.dropdown-wrapper'))
-    document.getElementById('dd-menu').classList.remove('open');
-});
-function updateLabel() {
-  const n = active.size;
-  document.getElementById('dd-label').textContent =
-    n === ALL_FACS.length ? 'All 8 facility types' :
-    n === 1 ? [...active][0] : `${n} facility types selected`;
-}
-function selectAll() {
-  active = new Set(ALL_FACS);
-  document.querySelectorAll('#dd-items input').forEach(c => c.checked = true);
-  updateLabel(); redraw();
-}
-function clearAll() {
-  active = new Set([ALL_FACS[0]]);
-  document.querySelectorAll('#dd-items input').forEach((c,i) => c.checked = i===0);
-  updateLabel(); redraw();
-  showWarn('At least one facility type must remain selected.');
-}
 function resetAll() {
-  selectAll();
+  active = new Set(ALL_FACS);
+  document.querySelectorAll('.pill').forEach(btn => {
+    const col = FAC_COLORS[btn.dataset.fac];
+    btn.classList.add('on');
+    btn.style.backgroundColor = col;
+    btn.style.color = '#fff';
+  });
   document.getElementById('yr-from').value = 2010;
   document.getElementById('yr-to').value   = 2025;
   clearWarn(); redraw();
 }
+
 function showWarn(msg) {
   document.getElementById('warn-msg').textContent = msg;
   setTimeout(clearWarn, 2500);

@@ -79,7 +79,7 @@ def theme(chart, title=None, subtitle=None, fs=15, sfs=11, height=None):
 
 
 # ============================================================
-# CHART 1 — Interactive line chart (dropdown + year filter)
+# CHART 1 — Interactive line chart with PILLS + year filter
 # ============================================================
 yearly_pass_records = yearly_pass.to_dict(orient='records')
 
@@ -99,33 +99,14 @@ CHART1_HTML = r"""<!DOCTYPE html>
   .ctrl-group { display:flex; flex-direction:column; gap:0.35rem; }
   .ctrl-label { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#666; }
 
-  .dropdown-wrapper { position:relative; }
-  .dropdown-trigger {
-    display:flex; align-items:center; justify-content:space-between; gap:0.5rem;
-    padding:0.4rem 0.8rem; border:1.5px solid #ccc; border-radius:6px;
-    background:#fff; cursor:pointer; font-size:0.84rem; font-family:Arial,sans-serif;
-    min-width:240px; user-select:none; color:#333;
+  .pill-row { display:flex; flex-wrap:wrap; gap:0.35rem; }
+  .pill {
+    border:2px solid; border-radius:20px; padding:0.22rem 0.7rem;
+    font-size:0.75rem; cursor:pointer; background:white;
+    transition:background 0.15s, color 0.15s;
+    font-family:Arial,sans-serif; white-space:nowrap;
   }
-  .dropdown-trigger:hover { border-color:#999; }
-  .arrow { font-size:0.6rem; color:#aaa; }
-  .dropdown-menu {
-    display:none; position:absolute; top:calc(100% + 4px); left:0;
-    background:#fff; border:1.5px solid #ddd; border-radius:6px;
-    box-shadow:0 4px 18px rgba(0,0,0,.12); z-index:999;
-    min-width:260px; padding:0.4rem 0; max-height:360px; overflow-y:auto;
-  }
-  .dropdown-menu.open { display:block; }
-  .dropdown-item {
-    display:flex; align-items:center; gap:0.6rem;
-    padding:0.44rem 0.9rem; cursor:pointer;
-    font-size:0.83rem; font-family:Arial,sans-serif; transition:background 0.1s;
-  }
-  .dropdown-item:hover { background:#f5f5f5; }
-  .color-dot { width:11px; height:11px; border-radius:50%; flex-shrink:0; }
-  .dropdown-item input { cursor:pointer; }
-  .dropdown-divider { border:none; border-top:1px solid #eee; margin:0.3rem 0; }
-  .dropdown-action { padding:0.3rem 0.9rem; font-size:0.75rem; color:#c0392b; cursor:pointer; }
-  .dropdown-action:hover { text-decoration:underline; }
+  .pill.on { color:#fff !important; }
 
   .year-row { display:flex; align-items:center; gap:0.5rem; }
   .year-input {
@@ -151,23 +132,12 @@ CHART1_HTML = r"""<!DOCTYPE html>
 <body>
 
 <p class="chart-title">Pass Rate Across 8 Chicago Facility Types, 2010–2025</p>
-<p class="chart-subtitle">Use the controls to focus on specific facility types or a time window. Hover any point for details.</p>
+<p class="chart-subtitle">Click facility pills to show/hide. Adjust year range to zoom in. Hover any point for details.</p>
 
 <div class="controls">
   <div class="ctrl-group">
     <div class="ctrl-label">Facility Type</div>
-    <div class="dropdown-wrapper">
-      <div class="dropdown-trigger" id="dd-trigger" onclick="toggleDropdown()">
-        <span id="dd-label">All 8 facility types</span>
-        <span class="arrow">▼</span>
-      </div>
-      <div class="dropdown-menu" id="dd-menu">
-        <div class="dropdown-action" onclick="selectAll()">✓ Select all</div>
-        <div class="dropdown-action" onclick="clearAll()">✗ Clear all</div>
-        <hr class="dropdown-divider">
-        <div id="dd-items"></div>
-      </div>
-    </div>
+    <div class="pill-row" id="pills"></div>
   </div>
   <div class="ctrl-group">
     <div class="ctrl-label">Year Range</div>
@@ -184,7 +154,7 @@ CHART1_HTML = r"""<!DOCTYPE html>
 
 <div class="warn" id="warn-msg"></div>
 <div id="vis"></div>
-<p class="chart-note">Select/deselect facility types (min 1). Hover any point for exact pass rate and inspection count.</p>
+<p class="chart-note">Click a pill to toggle a facility type (min 1). Hover any point for exact values.</p>
 
 <script src="https://cdn.jsdelivr.net/npm/vega@5/build/vega.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-lite@5/build/vega-lite.min.js"></script>
@@ -195,63 +165,55 @@ const FAC_COLORS = __COLORS__;
 const ALL_FACS   = __FACS__;
 const YEAR_DOM   = __YEARDOMAIN__;
 
-let active = new Set(ALL_FACS);
+let active   = new Set(ALL_FACS);
 let vegaView = null;
 
-// build dropdown
-const ddItems = document.getElementById('dd-items');
+// build pills
+const pillRow = document.getElementById('pills');
 ALL_FACS.forEach(fac => {
-  const item = document.createElement('div');
-  item.className = 'dropdown-item';
-  item.innerHTML = `
-    <input type="checkbox" id="chk-${fac}" checked>
-    <span class="color-dot" style="background:${FAC_COLORS[fac]}"></span>
-    <label for="chk-${fac}" style="cursor:pointer;flex:1">${fac}</label>
-  `;
-  item.querySelector('input').addEventListener('change', e => {
-    if (!e.target.checked && active.size === 1) {
-      e.target.checked = true;
+  const btn = document.createElement('button');
+  btn.className = 'pill on';
+  btn.textContent = fac;
+  btn.dataset.fac = fac;
+  const col = FAC_COLORS[fac];
+  btn.style.borderColor = col;
+  btn.style.backgroundColor = col;
+  btn.style.color = '#fff';
+  btn.addEventListener('click', () => {
+    if (active.has(fac) && active.size === 1) {
       showWarn('At least one facility type must remain selected.');
       return;
     }
     clearWarn();
-    if (e.target.checked) active.add(fac);
-    else active.delete(fac);
-    updateLabel(); redraw();
+    if (active.has(fac)) {
+      active.delete(fac);
+      btn.classList.remove('on');
+      btn.style.backgroundColor = '#fff';
+      btn.style.color = col;
+    } else {
+      active.add(fac);
+      btn.classList.add('on');
+      btn.style.backgroundColor = col;
+      btn.style.color = '#fff';
+    }
+    redraw();
   });
-  ddItems.appendChild(item);
+  pillRow.appendChild(btn);
 });
 
-function toggleDropdown() {
-  document.getElementById('dd-menu').classList.toggle('open');
-}
-document.addEventListener('click', e => {
-  if (!e.target.closest('.dropdown-wrapper'))
-    document.getElementById('dd-menu').classList.remove('open');
-});
-function updateLabel() {
-  const n = active.size;
-  document.getElementById('dd-label').textContent =
-    n === ALL_FACS.length ? 'All 8 facility types' :
-    n === 1 ? [...active][0] : `${n} facility types selected`;
-}
-function selectAll() {
-  active = new Set(ALL_FACS);
-  document.querySelectorAll('#dd-items input').forEach(c => c.checked = true);
-  updateLabel(); redraw();
-}
-function clearAll() {
-  active = new Set([ALL_FACS[0]]);
-  document.querySelectorAll('#dd-items input').forEach((c,i) => c.checked = i===0);
-  updateLabel(); redraw();
-  showWarn('At least one facility type must remain selected.');
-}
 function resetAll() {
-  selectAll();
+  active = new Set(ALL_FACS);
+  document.querySelectorAll('.pill').forEach(btn => {
+    const col = FAC_COLORS[btn.dataset.fac];
+    btn.classList.add('on');
+    btn.style.backgroundColor = col;
+    btn.style.color = '#fff';
+  });
   document.getElementById('yr-from').value = 2010;
   document.getElementById('yr-to').value   = 2025;
   clearWarn(); redraw();
 }
+
 function showWarn(msg) {
   document.getElementById('warn-msg').textContent = msg;
   setTimeout(clearWarn, 2500);
@@ -370,7 +332,8 @@ agg = agg[['Year', 'Pass Rate']]
 
 overview_line = (
     alt.Chart(agg)
-    .mark_line(color=TITLE_COLOR, strokeWidth=3, point=alt.OverlayMarkDef(filled=True, size=60, color=TITLE_COLOR))
+    .mark_line(color=TITLE_COLOR, strokeWidth=3,
+               point=alt.OverlayMarkDef(filled=True, size=60, color=TITLE_COLOR))
     .encode(
         x=alt.X('Year:O', title='Year', axis=alt.Axis(labelAngle=-45, titlePadding=12)),
         y=alt.Y('Pass Rate:Q', title='Avg Pass Rate (%)', scale=alt.Scale(domain=[0,100])),
@@ -470,52 +433,63 @@ print("[OK] heatmap.html")
 
 
 # ============================================================
-# CHART 4 — Pictograph
+# CHART 4 — First inspection outcomes stacked bar
 # ============================================================
+first_insp_summary = (
+    pictograph_df.groupby(['Group', 'Result'])
+    .size()
+    .reset_index(name='Percentage')
+)
 group_order = [
     'All Chicago Food Businesses',
     'Retail Food (restaurants, grocery, bakery)',
     'Mobile Food (trucks & carts)',
     'Wholesale Food',
 ]
-result_palette = alt.Scale(
-    domain=['Pass', 'Pass w/ Conditions', 'Fail'],
-    range=['#27ae60', '#f39c12', ACCENT_RED]
-)
-inner = alt.Chart(pictograph_df).mark_point(filled=True, size=110, shape='square').encode(
-    x=alt.X('Col:O', axis=None),
-    y=alt.Y('Row:O', axis=None, sort='descending'),
-    color=alt.Color('Result:N', scale=result_palette,
-                    legend=alt.Legend(title=None, orient='top', labelFontSize=12, symbolSize=130)),
-    tooltip=[alt.Tooltip('Group:N', title='Category'),
-             alt.Tooltip('Result:N', title='Outcome'),
-             alt.Tooltip('N_total:Q', title='Sample size', format=',')]
-).properties(width=240, height=240)
+first_insp_summary = first_insp_summary[
+    first_insp_summary['Group'].isin(group_order)
+].copy()
 
-pictograph = (
-    inner.facet(
-        facet=alt.Facet('Group:N', title=None, sort=group_order,
-                        header=alt.Header(labelFontSize=13, labelFontWeight='bold',
-                                          labelLimit=320, labelPadding=12, labelColor=TITLE_COLOR)),
-        columns=2,
-    )
-    .resolve_scale(x='shared', y='shared')
-    .properties(
-        title=alt.TitleParams(
-            text='Of Every 100 New Chicago Food Businesses, How Many Pass on Day One?',
-            subtitle='Each square = 1% of first-ever inspections. Green = pass, amber = conditions, red = fail.',
-            fontSize=15, subtitleFontSize=11, subtitleColor=SUBTITLE_CLR,
-            anchor='start', color=TITLE_COLOR,
-        )
-    )
-    .configure_view(stroke=None, fill=BACKGROUND)
-    .configure_title(fontSize=15, subtitleFontSize=11, subtitleColor=SUBTITLE_CLR,
-                     anchor='start', color=TITLE_COLOR)
-    .configure_legend(labelFontSize=12, titleFontSize=12,
-                      fillColor='#fff', strokeColor='#e8e6e0', padding=8, cornerRadius=4)
+stacked = alt.Chart(first_insp_summary).mark_bar(
+    cornerRadiusTopRight=3, cornerRadiusBottomRight=3
+).encode(
+    x=alt.X('Percentage:Q', title='% of First Inspections', scale=alt.Scale(domain=[0,100])),
+    y=alt.Y('Group:N', sort=group_order, title=None,
+            axis=alt.Axis(labelLimit=300, labelFontSize=12)),
+    color=alt.Color('Result:N',
+                    sort=['Pass', 'Pass w/ Conditions', 'Fail'],
+                    scale=alt.Scale(
+                        domain=['Pass', 'Pass w/ Conditions', 'Fail'],
+                        range=['#27ae60', '#f39c12', ACCENT_RED]
+                    ),
+                    legend=alt.Legend(title='Outcome', orient='top',
+                                      labelFontSize=12, symbolSize=150)),
+    order=alt.Order('Result:N', sort='ascending'),
+    tooltip=[
+        alt.Tooltip('Group:N',      title='Category'),
+        alt.Tooltip('Result:N',     title='Outcome'),
+        alt.Tooltip('Percentage:Q', title='% of inspections', format='.0f'),
+    ]
 )
-pictograph.save(chart_path('pictograph_first_inspection.html'))
-print("[OK] pictograph_first_inspection.html")
+
+text_labels = alt.Chart(first_insp_summary).mark_text(
+    align='center', baseline='middle', fontSize=11,
+    fontWeight='bold', color='white'
+).encode(
+    x=alt.X('Percentage:Q'),
+    y=alt.Y('Group:N', sort=group_order),
+    detail='Result:N',
+    text=alt.Text('Percentage:Q', format='.0f'),
+    order=alt.Order('Result:N', sort='ascending'),
+).transform_filter(alt.datum.Percentage > 8)
+
+first_insp_chart = theme(
+    alt.layer(stacked, text_labels).properties(width='container', height=220),
+    title='Of Every 100 New Chicago Food Businesses, How Many Pass on Day One?',
+    subtitle='Stacked bars show % of first-ever inspections ending in each outcome, by license category.',
+)
+first_insp_chart.save(chart_path('pictograph_first_inspection.html'))
+print("[OK] pictograph_first_inspection.html (stacked bar)")
 
 
 # ============================================================
@@ -608,12 +582,13 @@ map_chart = (
             text="Where Chicago's Uninspected Restaurants Live",
             subtitle=("Each dot = long-active retail food business never inspected. "
                       "ZIP fill = share of that ZIP's licenses never inspected."),
-            fontSize=15, subtitleFontSize=11, anchor='start', color=TITLE_COLOR,
+            fontSize=15, subtitleFontSize=11,
+            anchor='start', color=TITLE_COLOR,
         )
     )
     .configure_view(stroke=None)
-    .configure_title(fontSize=15, subtitleFontSize=11, subtitleColor=SUBTITLE_CLR,
-                     anchor='start', color=TITLE_COLOR)
+    .configure_title(fontSize=15, subtitleFontSize=11,
+                     subtitleColor=SUBTITLE_CLR, anchor='start', color=TITLE_COLOR)
     .configure_legend(labelFontSize=11, titleFontSize=12,
                       fillColor='#fff', strokeColor='#e8e6e0', padding=8, cornerRadius=4)
 )

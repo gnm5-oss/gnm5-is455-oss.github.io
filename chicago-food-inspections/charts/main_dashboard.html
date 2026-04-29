@@ -5,49 +5,118 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   * { box-sizing: border-box; }
-  body { margin: 0; padding: 0; font-family: Arial, sans-serif; background: transparent; }
+  body {
+    margin: 0; padding: 0;
+    font-family: Arial, sans-serif;
+    background: #FAFAF7; color: #111;
+  }
+  .chart-title {
+    font-family: Georgia, serif;
+    font-size: 1.15rem; font-weight: bold;
+    color: #2c3e50; margin: 0 0 0.2rem;
+  }
+  .chart-subtitle {
+    font-family: Arial, sans-serif;
+    font-size: 0.78rem; color: #888; margin: 0 0 1rem;
+  }
   .controls {
-    display: flex; flex-wrap: wrap; gap: 1.25rem;
-    padding: 0.75rem 0 1.25rem; align-items: flex-start;
+    display: flex; flex-wrap: wrap;
+    gap: 1rem; align-items: flex-end;
+    margin-bottom: 0.6rem;
   }
-  .ctrl-group { display: flex; flex-direction: column; gap: 0.45rem; }
+  .ctrl-group { display: flex; flex-direction: column; gap: 0.35rem; }
   .ctrl-label {
-    font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.1em; color: #666;
+    font-size: 0.68rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em; color: #666;
   }
-  .pill-row { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-  .pill {
-    border: 2px solid; border-radius: 20px; padding: 0.22rem 0.7rem;
-    font-size: 0.75rem; cursor: pointer; background: white;
-    transition: background 0.15s, color 0.15s;
-    font-family: Arial, sans-serif; white-space: nowrap;
+  .dropdown-wrapper { position: relative; }
+  .dropdown-trigger {
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 0.5rem;
+    padding: 0.38rem 0.75rem;
+    border: 1.5px solid #ccc; border-radius: 6px;
+    background: #fff; cursor: pointer;
+    font-size: 0.82rem; font-family: Arial, sans-serif;
+    min-width: 230px; user-select: none; color: #333;
   }
-  .pill.on { color: #fff !important; }
+  .dropdown-trigger:hover { border-color: #999; }
+  .dropdown-trigger .arrow { font-size: 0.6rem; color: #aaa; }
+  .dropdown-menu {
+    display: none;
+    position: absolute; top: calc(100% + 4px); left: 0;
+    background: #fff;
+    border: 1.5px solid #ddd; border-radius: 6px;
+    box-shadow: 0 4px 18px rgba(0,0,0,.11);
+    z-index: 999; min-width: 250px;
+    padding: 0.4rem 0;
+    max-height: 340px; overflow-y: auto;
+  }
+  .dropdown-menu.open { display: block; }
+  .dropdown-item {
+    display: flex; align-items: center; gap: 0.55rem;
+    padding: 0.42rem 0.9rem; cursor: pointer;
+    font-size: 0.82rem; font-family: Arial, sans-serif;
+    transition: background 0.1s;
+  }
+  .dropdown-item:hover { background: #f5f5f5; }
+  .color-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+  .dropdown-item input[type="checkbox"] { cursor: pointer; }
+  .dropdown-divider { border: none; border-top: 1px solid #eee; margin: 0.3rem 0; }
+  .dropdown-action {
+    padding: 0.3rem 0.9rem;
+    font-size: 0.75rem; color: #c0392b;
+    cursor: pointer; font-family: Arial, sans-serif;
+  }
+  .dropdown-action:hover { text-decoration: underline; }
   .year-row { display: flex; align-items: center; gap: 0.5rem; }
   .year-input {
-    width: 62px; padding: 0.3rem 0.4rem; border: 1px solid #ccc;
-    border-radius: 4px; font-size: 0.85rem; text-align: center;
-    font-family: Arial, sans-serif;
+    width: 65px; padding: 0.35rem 0.4rem;
+    border: 1.5px solid #ccc; border-radius: 6px;
+    font-size: 0.82rem; text-align: center;
+    font-family: Arial, sans-serif; color: #333;
   }
-  .year-sep { color: #888; font-size: 0.82rem; }
+  .year-sep { color: #aaa; font-size: 0.8rem; }
   .reset-btn {
-    border: 1px solid #ccc; border-radius: 4px; padding: 0.28rem 0.75rem;
-    font-size: 0.75rem; cursor: pointer; background: #f5f5f5;
-    font-family: Arial, sans-serif; align-self: flex-end;
+    padding: 0.38rem 0.85rem;
+    border: 1.5px solid #ddd; border-radius: 6px;
+    background: #f7f7f7; font-size: 0.78rem;
+    cursor: pointer; font-family: Arial, sans-serif; color: #555;
   }
-  .reset-btn:hover { background: #e8e8e8; }
+  .reset-btn:hover { background: #eee; }
+  .warn {
+    font-size: 0.78rem; color: #c0392b;
+    font-style: italic; min-height: 1.1rem; margin-bottom: 0.3rem;
+  }
   #vis { width: 100%; }
   .vega-embed { width: 100% !important; }
   .vega-embed canvas, .vega-embed svg { width: 100% !important; }
-  .chart-note { font-size: 0.75rem; color: #888; font-style: italic; margin-top: 0.4rem; }
+  .chart-note {
+    font-size: 0.75rem; color: #999;
+    font-style: italic; margin-top: 0.5rem;
+    font-family: Arial, sans-serif;
+  }
 </style>
 </head>
 <body>
 
+<p class="chart-title">Pass Rate Across 8 Chicago Facility Types, 2010–2025</p>
+<p class="chart-subtitle">Use the controls to focus on specific facility types or a time window. Hover any point for details.</p>
+
 <div class="controls">
   <div class="ctrl-group">
     <div class="ctrl-label">Facility Type</div>
-    <div class="pill-row" id="pills"></div>
+    <div class="dropdown-wrapper">
+      <div class="dropdown-trigger" id="dd-trigger" onclick="toggleDropdown()">
+        <span id="dd-label">All 8 facility types</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="dropdown-menu" id="dd-menu">
+        <div class="dropdown-action" onclick="selectAll()">✓ Select all</div>
+        <div class="dropdown-action" onclick="clearAll()">✗ Clear all</div>
+        <hr class="dropdown-divider">
+        <div id="dd-items"></div>
+      </div>
+    </div>
   </div>
   <div class="ctrl-group">
     <div class="ctrl-label">Year Range</div>
@@ -57,118 +126,174 @@
       <input type="number" id="yr-to" class="year-input" value="2025" min="2010" max="2025">
     </div>
   </div>
-  <div class="ctrl-group" style="align-self:flex-end;">
-    <button class="reset-btn" onclick="reset()">Reset all</button>
+  <div class="ctrl-group" style="align-self:flex-end">
+    <button class="reset-btn" onclick="resetAll()">Reset all</button>
   </div>
 </div>
 
+<div class="warn" id="warn-msg"></div>
 <div id="vis"></div>
-<p class="chart-note">Click a facility pill to show/hide it. Hover any point for exact pass rate and inspection count.</p>
+<p class="chart-note">
+  Select/deselect facility types (at least 1 must remain selected).
+  Hover any point for exact pass rate and inspection count.
+</p>
 
 <script src="https://cdn.jsdelivr.net/npm/vega@5/build/vega.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-lite@5/build/vega-lite.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-embed@6/build/vega-embed.min.js"></script>
 
 <script>
-const ALL_DATA = [{"Facility Type": "Bakery", "Year": 2010, "Pass Rate": 69.06, "Total": 223}, {"Facility Type": "Bakery", "Year": 2011, "Pass Rate": 69.93, "Total": 286}, {"Facility Type": "Bakery", "Year": 2012, "Pass Rate": 67.84, "Total": 227}, {"Facility Type": "Bakery", "Year": 2013, "Pass Rate": 73.86, "Total": 241}, {"Facility Type": "Bakery", "Year": 2014, "Pass Rate": 67.67, "Total": 300}, {"Facility Type": "Bakery", "Year": 2015, "Pass Rate": 70.25, "Total": 279}, {"Facility Type": "Bakery", "Year": 2016, "Pass Rate": 64.29, "Total": 322}, {"Facility Type": "Bakery", "Year": 2017, "Pass Rate": 67.43, "Total": 261}, {"Facility Type": "Bakery", "Year": 2018, "Pass Rate": 34.5, "Total": 200}, {"Facility Type": "Bakery", "Year": 2019, "Pass Rate": 18.75, "Total": 224}, {"Facility Type": "Bakery", "Year": 2020, "Pass Rate": 34.36, "Total": 195}, {"Facility Type": "Bakery", "Year": 2021, "Pass Rate": 45.56, "Total": 180}, {"Facility Type": "Bakery", "Year": 2022, "Pass Rate": 58.24, "Total": 182}, {"Facility Type": "Bakery", "Year": 2023, "Pass Rate": 57.5, "Total": 200}, {"Facility Type": "Bakery", "Year": 2024, "Pass Rate": 60.87, "Total": 230}, {"Facility Type": "Bakery", "Year": 2025, "Pass Rate": 64.41, "Total": 236}, {"Facility Type": "Children's Services Facility", "Year": 2010, "Pass Rate": 82.52, "Total": 206}, {"Facility Type": "Children's Services Facility", "Year": 2011, "Pass Rate": 75.2, "Total": 250}, {"Facility Type": "Children's Services Facility", "Year": 2012, "Pass Rate": 80.0, "Total": 225}, {"Facility Type": "Children's Services Facility", "Year": 2013, "Pass Rate": 79.27, "Total": 193}, {"Facility Type": "Children's Services Facility", "Year": 2014, "Pass Rate": 72.25, "Total": 173}, {"Facility Type": "Children's Services Facility", "Year": 2015, "Pass Rate": 76.19, "Total": 420}, {"Facility Type": "Children's Services Facility", "Year": 2016, "Pass Rate": 76.04, "Total": 455}, {"Facility Type": "Children's Services Facility", "Year": 2017, "Pass Rate": 75.3, "Total": 502}, {"Facility Type": "Children's Services Facility", "Year": 2018, "Pass Rate": 31.59, "Total": 516}, {"Facility Type": "Children's Services Facility", "Year": 2019, "Pass Rate": 46.57, "Total": 554}, {"Facility Type": "Children's Services Facility", "Year": 2020, "Pass Rate": 65.19, "Total": 405}, {"Facility Type": "Children's Services Facility", "Year": 2021, "Pass Rate": 70.3, "Total": 505}, {"Facility Type": "Children's Services Facility", "Year": 2022, "Pass Rate": 72.19, "Total": 525}, {"Facility Type": "Children's Services Facility", "Year": 2023, "Pass Rate": 74.45, "Total": 634}, {"Facility Type": "Children's Services Facility", "Year": 2024, "Pass Rate": 74.39, "Total": 617}, {"Facility Type": "Children's Services Facility", "Year": 2025, "Pass Rate": 77.41, "Total": 611}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2010, "Pass Rate": 67.29, "Total": 425}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2011, "Pass Rate": 73.3, "Total": 352}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2012, "Pass Rate": 69.77, "Total": 301}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2013, "Pass Rate": 76.0, "Total": 150}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2014, "Pass Rate": 78.1, "Total": 137}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2015, "Pass Rate": 76.33, "Total": 207}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2016, "Pass Rate": 81.25, "Total": 192}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2017, "Pass Rate": 80.59, "Total": 170}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2018, "Pass Rate": 28.87, "Total": 142}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2019, "Pass Rate": 50.38, "Total": 133}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2020, "Pass Rate": 67.47, "Total": 83}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2021, "Pass Rate": 67.62, "Total": 105}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2022, "Pass Rate": 73.49, "Total": 83}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2023, "Pass Rate": 62.5, "Total": 128}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2024, "Pass Rate": 72.55, "Total": 102}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2025, "Pass Rate": 76.64, "Total": 107}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2010, "Pass Rate": 76.28, "Total": 253}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2011, "Pass Rate": 79.92, "Total": 239}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2012, "Pass Rate": 76.54, "Total": 260}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2013, "Pass Rate": 77.78, "Total": 153}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2014, "Pass Rate": 62.66, "Total": 158}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2015, "Pass Rate": 80.33, "Total": 239}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2016, "Pass Rate": 75.2, "Total": 250}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2017, "Pass Rate": 75.85, "Total": 265}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2018, "Pass Rate": 34.06, "Total": 229}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2019, "Pass Rate": 42.86, "Total": 273}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2020, "Pass Rate": 68.31, "Total": 183}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2021, "Pass Rate": 70.66, "Total": 242}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2022, "Pass Rate": 62.16, "Total": 222}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2023, "Pass Rate": 64.06, "Total": 281}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2024, "Pass Rate": 71.37, "Total": 262}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2025, "Pass Rate": 75.61, "Total": 246}, {"Facility Type": "Grocery Store", "Year": 2010, "Pass Rate": 62.15, "Total": 2544}, {"Facility Type": "Grocery Store", "Year": 2011, "Pass Rate": 60.74, "Total": 2807}, {"Facility Type": "Grocery Store", "Year": 2012, "Pass Rate": 62.41, "Total": 2490}, {"Facility Type": "Grocery Store", "Year": 2013, "Pass Rate": 66.14, "Total": 2581}, {"Facility Type": "Grocery Store", "Year": 2014, "Pass Rate": 65.89, "Total": 2562}, {"Facility Type": "Grocery Store", "Year": 2015, "Pass Rate": 66.71, "Total": 2250}, {"Facility Type": "Grocery Store", "Year": 2016, "Pass Rate": 63.3, "Total": 2308}, {"Facility Type": "Grocery Store", "Year": 2017, "Pass Rate": 65.64, "Total": 1921}, {"Facility Type": "Grocery Store", "Year": 2018, "Pass Rate": 37.49, "Total": 1523}, {"Facility Type": "Grocery Store", "Year": 2019, "Pass Rate": 23.27, "Total": 1513}, {"Facility Type": "Grocery Store", "Year": 2020, "Pass Rate": 33.77, "Total": 2206}, {"Facility Type": "Grocery Store", "Year": 2021, "Pass Rate": 46.8, "Total": 1295}, {"Facility Type": "Grocery Store", "Year": 2022, "Pass Rate": 57.0, "Total": 1421}, {"Facility Type": "Grocery Store", "Year": 2023, "Pass Rate": 56.0, "Total": 1491}, {"Facility Type": "Grocery Store", "Year": 2024, "Pass Rate": 60.61, "Total": 1546}, {"Facility Type": "Grocery Store", "Year": 2025, "Pass Rate": 63.85, "Total": 1397}, {"Facility Type": "Long Term Care", "Year": 2010, "Pass Rate": 66.03, "Total": 156}, {"Facility Type": "Long Term Care", "Year": 2011, "Pass Rate": 71.76, "Total": 85}, {"Facility Type": "Long Term Care", "Year": 2012, "Pass Rate": 63.41, "Total": 123}, {"Facility Type": "Long Term Care", "Year": 2013, "Pass Rate": 69.39, "Total": 49}, {"Facility Type": "Long Term Care", "Year": 2014, "Pass Rate": 72.97, "Total": 37}, {"Facility Type": "Long Term Care", "Year": 2015, "Pass Rate": 73.46, "Total": 162}, {"Facility Type": "Long Term Care", "Year": 2016, "Pass Rate": 63.64, "Total": 198}, {"Facility Type": "Long Term Care", "Year": 2017, "Pass Rate": 65.52, "Total": 174}, {"Facility Type": "Long Term Care", "Year": 2018, "Pass Rate": 25.14, "Total": 175}, {"Facility Type": "Long Term Care", "Year": 2019, "Pass Rate": 39.55, "Total": 177}, {"Facility Type": "Long Term Care", "Year": 2020, "Pass Rate": 55.56, "Total": 45}, {"Facility Type": "Long Term Care", "Year": 2021, "Pass Rate": 42.54, "Total": 134}, {"Facility Type": "Long Term Care", "Year": 2022, "Pass Rate": 56.65, "Total": 173}, {"Facility Type": "Long Term Care", "Year": 2023, "Pass Rate": 61.58, "Total": 177}, {"Facility Type": "Long Term Care", "Year": 2024, "Pass Rate": 55.14, "Total": 185}, {"Facility Type": "Long Term Care", "Year": 2025, "Pass Rate": 64.61, "Total": 178}, {"Facility Type": "Restaurant", "Year": 2010, "Pass Rate": 65.62, "Total": 10540}, {"Facility Type": "Restaurant", "Year": 2011, "Pass Rate": 66.36, "Total": 10815}, {"Facility Type": "Restaurant", "Year": 2012, "Pass Rate": 67.31, "Total": 10123}, {"Facility Type": "Restaurant", "Year": 2013, "Pass Rate": 69.92, "Total": 11736}, {"Facility Type": "Restaurant", "Year": 2014, "Pass Rate": 67.29, "Total": 13358}, {"Facility Type": "Restaurant", "Year": 2015, "Pass Rate": 66.59, "Total": 12318}, {"Facility Type": "Restaurant", "Year": 2016, "Pass Rate": 64.22, "Total": 14071}, {"Facility Type": "Restaurant", "Year": 2017, "Pass Rate": 65.04, "Total": 13109}, {"Facility Type": "Restaurant", "Year": 2018, "Pass Rate": 43.27, "Total": 10141}, {"Facility Type": "Restaurant", "Year": 2019, "Pass Rate": 24.96, "Total": 11264}, {"Facility Type": "Restaurant", "Year": 2020, "Pass Rate": 45.43, "Total": 8034}, {"Facility Type": "Restaurant", "Year": 2021, "Pass Rate": 50.41, "Total": 8965}, {"Facility Type": "Restaurant", "Year": 2022, "Pass Rate": 55.59, "Total": 9819}, {"Facility Type": "Restaurant", "Year": 2023, "Pass Rate": 58.48, "Total": 10501}, {"Facility Type": "Restaurant", "Year": 2024, "Pass Rate": 60.63, "Total": 11149}, {"Facility Type": "Restaurant", "Year": 2025, "Pass Rate": 62.98, "Total": 11424}, {"Facility Type": "School", "Year": 2010, "Pass Rate": 81.5, "Total": 1351}, {"Facility Type": "School", "Year": 2011, "Pass Rate": 78.19, "Total": 1380}, {"Facility Type": "School", "Year": 2012, "Pass Rate": 75.26, "Total": 1164}, {"Facility Type": "School", "Year": 2013, "Pass Rate": 79.32, "Total": 1146}, {"Facility Type": "School", "Year": 2014, "Pass Rate": 75.71, "Total": 1132}, {"Facility Type": "School", "Year": 2015, "Pass Rate": 72.49, "Total": 1145}, {"Facility Type": "School", "Year": 2016, "Pass Rate": 67.25, "Total": 1203}, {"Facility Type": "School", "Year": 2017, "Pass Rate": 70.72, "Total": 1134}, {"Facility Type": "School", "Year": 2018, "Pass Rate": 58.41, "Total": 1171}, {"Facility Type": "School", "Year": 2019, "Pass Rate": 48.03, "Total": 1091}, {"Facility Type": "School", "Year": 2020, "Pass Rate": 58.62, "Total": 899}, {"Facility Type": "School", "Year": 2021, "Pass Rate": 64.19, "Total": 1078}, {"Facility Type": "School", "Year": 2022, "Pass Rate": 61.48, "Total": 1137}, {"Facility Type": "School", "Year": 2023, "Pass Rate": 63.23, "Total": 1175}, {"Facility Type": "School", "Year": 2024, "Pass Rate": 63.48, "Total": 1109}, {"Facility Type": "School", "Year": 2025, "Pass Rate": 67.19, "Total": 1076}];
+const ALL_DATA   = [{"Facility Type": "Bakery", "Year": 2010, "Pass Rate": 69.06, "Total": 223}, {"Facility Type": "Bakery", "Year": 2011, "Pass Rate": 69.93, "Total": 286}, {"Facility Type": "Bakery", "Year": 2012, "Pass Rate": 67.84, "Total": 227}, {"Facility Type": "Bakery", "Year": 2013, "Pass Rate": 73.86, "Total": 241}, {"Facility Type": "Bakery", "Year": 2014, "Pass Rate": 67.67, "Total": 300}, {"Facility Type": "Bakery", "Year": 2015, "Pass Rate": 70.25, "Total": 279}, {"Facility Type": "Bakery", "Year": 2016, "Pass Rate": 64.29, "Total": 322}, {"Facility Type": "Bakery", "Year": 2017, "Pass Rate": 67.43, "Total": 261}, {"Facility Type": "Bakery", "Year": 2018, "Pass Rate": 34.5, "Total": 200}, {"Facility Type": "Bakery", "Year": 2019, "Pass Rate": 18.75, "Total": 224}, {"Facility Type": "Bakery", "Year": 2020, "Pass Rate": 34.36, "Total": 195}, {"Facility Type": "Bakery", "Year": 2021, "Pass Rate": 45.56, "Total": 180}, {"Facility Type": "Bakery", "Year": 2022, "Pass Rate": 58.24, "Total": 182}, {"Facility Type": "Bakery", "Year": 2023, "Pass Rate": 57.5, "Total": 200}, {"Facility Type": "Bakery", "Year": 2024, "Pass Rate": 60.87, "Total": 230}, {"Facility Type": "Bakery", "Year": 2025, "Pass Rate": 64.41, "Total": 236}, {"Facility Type": "Children's Services Facility", "Year": 2010, "Pass Rate": 82.52, "Total": 206}, {"Facility Type": "Children's Services Facility", "Year": 2011, "Pass Rate": 75.2, "Total": 250}, {"Facility Type": "Children's Services Facility", "Year": 2012, "Pass Rate": 80.0, "Total": 225}, {"Facility Type": "Children's Services Facility", "Year": 2013, "Pass Rate": 79.27, "Total": 193}, {"Facility Type": "Children's Services Facility", "Year": 2014, "Pass Rate": 72.25, "Total": 173}, {"Facility Type": "Children's Services Facility", "Year": 2015, "Pass Rate": 76.19, "Total": 420}, {"Facility Type": "Children's Services Facility", "Year": 2016, "Pass Rate": 76.04, "Total": 455}, {"Facility Type": "Children's Services Facility", "Year": 2017, "Pass Rate": 75.3, "Total": 502}, {"Facility Type": "Children's Services Facility", "Year": 2018, "Pass Rate": 31.59, "Total": 516}, {"Facility Type": "Children's Services Facility", "Year": 2019, "Pass Rate": 46.57, "Total": 554}, {"Facility Type": "Children's Services Facility", "Year": 2020, "Pass Rate": 65.19, "Total": 405}, {"Facility Type": "Children's Services Facility", "Year": 2021, "Pass Rate": 70.3, "Total": 505}, {"Facility Type": "Children's Services Facility", "Year": 2022, "Pass Rate": 72.19, "Total": 525}, {"Facility Type": "Children's Services Facility", "Year": 2023, "Pass Rate": 74.45, "Total": 634}, {"Facility Type": "Children's Services Facility", "Year": 2024, "Pass Rate": 74.39, "Total": 617}, {"Facility Type": "Children's Services Facility", "Year": 2025, "Pass Rate": 77.41, "Total": 611}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2010, "Pass Rate": 67.29, "Total": 425}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2011, "Pass Rate": 73.3, "Total": 352}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2012, "Pass Rate": 69.77, "Total": 301}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2013, "Pass Rate": 76.0, "Total": 150}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2014, "Pass Rate": 78.1, "Total": 137}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2015, "Pass Rate": 76.33, "Total": 207}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2016, "Pass Rate": 81.25, "Total": 192}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2017, "Pass Rate": 80.59, "Total": 170}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2018, "Pass Rate": 28.87, "Total": 142}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2019, "Pass Rate": 50.38, "Total": 133}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2020, "Pass Rate": 67.47, "Total": 83}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2021, "Pass Rate": 67.62, "Total": 105}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2022, "Pass Rate": 73.49, "Total": 83}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2023, "Pass Rate": 62.5, "Total": 128}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2024, "Pass Rate": 72.55, "Total": 102}, {"Facility Type": "Daycare (2 - 6 Years)", "Year": 2025, "Pass Rate": 76.64, "Total": 107}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2010, "Pass Rate": 76.28, "Total": 253}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2011, "Pass Rate": 79.92, "Total": 239}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2012, "Pass Rate": 76.54, "Total": 260}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2013, "Pass Rate": 77.78, "Total": 153}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2014, "Pass Rate": 62.66, "Total": 158}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2015, "Pass Rate": 80.33, "Total": 239}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2016, "Pass Rate": 75.2, "Total": 250}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2017, "Pass Rate": 75.85, "Total": 265}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2018, "Pass Rate": 34.06, "Total": 229}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2019, "Pass Rate": 42.86, "Total": 273}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2020, "Pass Rate": 68.31, "Total": 183}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2021, "Pass Rate": 70.66, "Total": 242}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2022, "Pass Rate": 62.16, "Total": 222}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2023, "Pass Rate": 64.06, "Total": 281}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2024, "Pass Rate": 71.37, "Total": 262}, {"Facility Type": "Daycare Above and Under 2 Years", "Year": 2025, "Pass Rate": 75.61, "Total": 246}, {"Facility Type": "Grocery Store", "Year": 2010, "Pass Rate": 62.15, "Total": 2544}, {"Facility Type": "Grocery Store", "Year": 2011, "Pass Rate": 60.74, "Total": 2807}, {"Facility Type": "Grocery Store", "Year": 2012, "Pass Rate": 62.41, "Total": 2490}, {"Facility Type": "Grocery Store", "Year": 2013, "Pass Rate": 66.14, "Total": 2581}, {"Facility Type": "Grocery Store", "Year": 2014, "Pass Rate": 65.89, "Total": 2562}, {"Facility Type": "Grocery Store", "Year": 2015, "Pass Rate": 66.71, "Total": 2250}, {"Facility Type": "Grocery Store", "Year": 2016, "Pass Rate": 63.3, "Total": 2308}, {"Facility Type": "Grocery Store", "Year": 2017, "Pass Rate": 65.64, "Total": 1921}, {"Facility Type": "Grocery Store", "Year": 2018, "Pass Rate": 37.49, "Total": 1523}, {"Facility Type": "Grocery Store", "Year": 2019, "Pass Rate": 23.27, "Total": 1513}, {"Facility Type": "Grocery Store", "Year": 2020, "Pass Rate": 33.77, "Total": 2206}, {"Facility Type": "Grocery Store", "Year": 2021, "Pass Rate": 46.8, "Total": 1295}, {"Facility Type": "Grocery Store", "Year": 2022, "Pass Rate": 57.0, "Total": 1421}, {"Facility Type": "Grocery Store", "Year": 2023, "Pass Rate": 56.0, "Total": 1491}, {"Facility Type": "Grocery Store", "Year": 2024, "Pass Rate": 60.61, "Total": 1546}, {"Facility Type": "Grocery Store", "Year": 2025, "Pass Rate": 63.85, "Total": 1397}, {"Facility Type": "Long Term Care", "Year": 2010, "Pass Rate": 66.03, "Total": 156}, {"Facility Type": "Long Term Care", "Year": 2011, "Pass Rate": 71.76, "Total": 85}, {"Facility Type": "Long Term Care", "Year": 2012, "Pass Rate": 63.41, "Total": 123}, {"Facility Type": "Long Term Care", "Year": 2013, "Pass Rate": 69.39, "Total": 49}, {"Facility Type": "Long Term Care", "Year": 2014, "Pass Rate": 72.97, "Total": 37}, {"Facility Type": "Long Term Care", "Year": 2015, "Pass Rate": 73.46, "Total": 162}, {"Facility Type": "Long Term Care", "Year": 2016, "Pass Rate": 63.64, "Total": 198}, {"Facility Type": "Long Term Care", "Year": 2017, "Pass Rate": 65.52, "Total": 174}, {"Facility Type": "Long Term Care", "Year": 2018, "Pass Rate": 25.14, "Total": 175}, {"Facility Type": "Long Term Care", "Year": 2019, "Pass Rate": 39.55, "Total": 177}, {"Facility Type": "Long Term Care", "Year": 2020, "Pass Rate": 55.56, "Total": 45}, {"Facility Type": "Long Term Care", "Year": 2021, "Pass Rate": 42.54, "Total": 134}, {"Facility Type": "Long Term Care", "Year": 2022, "Pass Rate": 56.65, "Total": 173}, {"Facility Type": "Long Term Care", "Year": 2023, "Pass Rate": 61.58, "Total": 177}, {"Facility Type": "Long Term Care", "Year": 2024, "Pass Rate": 55.14, "Total": 185}, {"Facility Type": "Long Term Care", "Year": 2025, "Pass Rate": 64.61, "Total": 178}, {"Facility Type": "Restaurant", "Year": 2010, "Pass Rate": 65.62, "Total": 10540}, {"Facility Type": "Restaurant", "Year": 2011, "Pass Rate": 66.36, "Total": 10815}, {"Facility Type": "Restaurant", "Year": 2012, "Pass Rate": 67.31, "Total": 10123}, {"Facility Type": "Restaurant", "Year": 2013, "Pass Rate": 69.92, "Total": 11736}, {"Facility Type": "Restaurant", "Year": 2014, "Pass Rate": 67.29, "Total": 13358}, {"Facility Type": "Restaurant", "Year": 2015, "Pass Rate": 66.59, "Total": 12318}, {"Facility Type": "Restaurant", "Year": 2016, "Pass Rate": 64.22, "Total": 14071}, {"Facility Type": "Restaurant", "Year": 2017, "Pass Rate": 65.04, "Total": 13109}, {"Facility Type": "Restaurant", "Year": 2018, "Pass Rate": 43.27, "Total": 10141}, {"Facility Type": "Restaurant", "Year": 2019, "Pass Rate": 24.96, "Total": 11264}, {"Facility Type": "Restaurant", "Year": 2020, "Pass Rate": 45.43, "Total": 8034}, {"Facility Type": "Restaurant", "Year": 2021, "Pass Rate": 50.41, "Total": 8965}, {"Facility Type": "Restaurant", "Year": 2022, "Pass Rate": 55.59, "Total": 9819}, {"Facility Type": "Restaurant", "Year": 2023, "Pass Rate": 58.48, "Total": 10501}, {"Facility Type": "Restaurant", "Year": 2024, "Pass Rate": 60.63, "Total": 11149}, {"Facility Type": "Restaurant", "Year": 2025, "Pass Rate": 62.98, "Total": 11424}, {"Facility Type": "School", "Year": 2010, "Pass Rate": 81.5, "Total": 1351}, {"Facility Type": "School", "Year": 2011, "Pass Rate": 78.19, "Total": 1380}, {"Facility Type": "School", "Year": 2012, "Pass Rate": 75.26, "Total": 1164}, {"Facility Type": "School", "Year": 2013, "Pass Rate": 79.32, "Total": 1146}, {"Facility Type": "School", "Year": 2014, "Pass Rate": 75.71, "Total": 1132}, {"Facility Type": "School", "Year": 2015, "Pass Rate": 72.49, "Total": 1145}, {"Facility Type": "School", "Year": 2016, "Pass Rate": 67.25, "Total": 1203}, {"Facility Type": "School", "Year": 2017, "Pass Rate": 70.72, "Total": 1134}, {"Facility Type": "School", "Year": 2018, "Pass Rate": 58.41, "Total": 1171}, {"Facility Type": "School", "Year": 2019, "Pass Rate": 48.03, "Total": 1091}, {"Facility Type": "School", "Year": 2020, "Pass Rate": 58.62, "Total": 899}, {"Facility Type": "School", "Year": 2021, "Pass Rate": 64.19, "Total": 1078}, {"Facility Type": "School", "Year": 2022, "Pass Rate": 61.48, "Total": 1137}, {"Facility Type": "School", "Year": 2023, "Pass Rate": 63.23, "Total": 1175}, {"Facility Type": "School", "Year": 2024, "Pass Rate": 63.48, "Total": 1109}, {"Facility Type": "School", "Year": 2025, "Pass Rate": 67.19, "Total": 1076}];
 const FAC_COLORS = {"Restaurant": "#4E79A7", "Grocery Store": "#F28E2B", "School": "#59A14F", "Children's Services Facility": "#E15759", "Bakery": "#76B7B2", "Daycare Above and Under 2 Years": "#EDC948", "Daycare (2 - 6 Years)": "#B07AA1", "Long Term Care": "#FF9DA7"};
-const ALL_FACS = ["Restaurant", "Grocery Store", "School", "Children's Services Facility", "Bakery", "Daycare Above and Under 2 Years", "Daycare (2 - 6 Years)", "Long Term Care"];
+const ALL_FACS   = ["Restaurant", "Grocery Store", "School", "Children's Services Facility", "Bakery", "Daycare Above and Under 2 Years", "Daycare (2 - 6 Years)", "Long Term Care"];
 
-let active = new Set(ALL_FACS);
+let active   = new Set(ALL_FACS);
 let vegaView = null;
 
-const pillRow = document.getElementById('pills');
+const ddItems = document.getElementById('dd-items');
 ALL_FACS.forEach(fac => {
-  const btn = document.createElement('button');
-  btn.className = 'pill on';
-  btn.textContent = fac;
-  btn.dataset.fac = fac;
-  const col = FAC_COLORS[fac];
-  btn.style.borderColor = col;
-  btn.style.backgroundColor = col;
-  btn.style.color = '#fff';
-  btn.addEventListener('click', () => {
-    if (active.has(fac)) {
-      active.delete(fac);
-      btn.classList.remove('on');
-      btn.style.backgroundColor = '#fff';
-      btn.style.color = col;
-    } else {
-      active.add(fac);
-      btn.classList.add('on');
-      btn.style.backgroundColor = col;
-      btn.style.color = '#fff';
+  const item = document.createElement('div');
+  item.className = 'dropdown-item';
+  item.innerHTML = `
+    <input type="checkbox" id="chk-${fac}" checked>
+    <span class="color-dot" style="background:${FAC_COLORS[fac]}"></span>
+    <label for="chk-${fac}" style="cursor:pointer;flex:1">${fac}</label>
+  `;
+  item.querySelector('input').addEventListener('change', e => {
+    if (!e.target.checked && active.size === 1) {
+      e.target.checked = true;
+      showWarn('At least one facility type must remain selected.');
+      return;
     }
-    redraw();
+    clearWarn();
+    if (e.target.checked) active.add(fac);
+    else active.delete(fac);
+    updateLabel(); redraw();
   });
-  pillRow.appendChild(btn);
+  ddItems.appendChild(item);
 });
+
+function toggleDropdown() {
+  document.getElementById('dd-menu').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.dropdown-wrapper'))
+    document.getElementById('dd-menu').classList.remove('open');
+});
+
+function updateLabel() {
+  const n = active.size;
+  document.getElementById('dd-label').textContent =
+    n === ALL_FACS.length ? 'All 8 facility types' :
+    n === 1 ? [...active][0] : `${n} facility types selected`;
+}
+
+function selectAll() {
+  active = new Set(ALL_FACS);
+  document.querySelectorAll('#dd-items input').forEach(c => c.checked = true);
+  updateLabel(); redraw();
+}
+
+function clearAll() {
+  const first = ALL_FACS[0];
+  active = new Set([first]);
+  document.querySelectorAll('#dd-items input').forEach((c,i) => c.checked = i === 0);
+  updateLabel(); redraw();
+  showWarn('At least one facility type must remain selected.');
+}
+
+function resetAll() {
+  selectAll();
+  document.getElementById('yr-from').value = 2010;
+  document.getElementById('yr-to').value   = 2025;
+  clearWarn(); redraw();
+}
+
+function showWarn(msg) {
+  document.getElementById('warn-msg').textContent = msg;
+  setTimeout(clearWarn, 2500);
+}
+function clearWarn() {
+  document.getElementById('warn-msg').textContent = '';
+}
 
 document.getElementById('yr-from').addEventListener('change', redraw);
 document.getElementById('yr-to').addEventListener('change', redraw);
 
-function reset() {
-  active = new Set(ALL_FACS);
-  document.querySelectorAll('.pill').forEach(btn => {
-    const col = FAC_COLORS[btn.dataset.fac];
-    btn.classList.add('on');
-    btn.style.backgroundColor = col;
-    btn.style.color = '#fff';
-  });
-  document.getElementById('yr-from').value = 2010;
-  document.getElementById('yr-to').value = 2025;
-  redraw();
-}
-
 function filtered() {
   const fy = +document.getElementById('yr-from').value;
   const ty = +document.getElementById('yr-to').value;
-  return ALL_DATA.filter(d => active.has(d['Facility Type']) && d.Year >= fy && d.Year <= ty);
+  return ALL_DATA.filter(d =>
+    active.has(d['Facility Type']) && d.Year >= fy && d.Year <= ty
+  );
 }
 
 const SPEC = {
   $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
-  width: 'container', height: 390,
+  width: 'container', height: 420,
   data: { name: 'table' },
   layer: [
     {
-      mark: { type: 'line', point: { size: 65, filled: true }, strokeWidth: 2.5 },
+      mark: { type: 'line', point: { size: 70, filled: true }, strokeWidth: 2.5 },
       encoding: {
-        x: { field: 'Year', type: 'ordinal', title: 'Year',
-             axis: { labelAngle: -45, titlePadding: 12, labelFontSize: 11, titleFontSize: 13 } },
-        y: { field: 'Pass Rate', type: 'quantitative', title: 'Pass Rate (%)',
-             scale: { domain: [0, 100] },
-             axis: { tickCount: 6, labelFontSize: 11, titleFontSize: 13, titleFontWeight: 'bold' } },
+        x: {
+          field: 'Year', type: 'ordinal', title: 'Year',
+          axis: { labelAngle: -45, titlePadding: 12,
+                  labelFontSize: 11, titleFontSize: 13,
+                  titleFontWeight: 'bold', gridColor: '#E8E6E0' }
+        },
+        y: {
+          field: 'Pass Rate', type: 'quantitative', title: 'Pass Rate (%)',
+          scale: { domain: [0, 100] },
+          axis: { tickCount: 6, labelFontSize: 11,
+                  titleFontSize: 13, titleFontWeight: 'bold',
+                  gridColor: '#E8E6E0' }
+        },
         color: {
           field: 'Facility Type', type: 'nominal',
           scale: { domain: ["Restaurant", "Grocery Store", "School", "Children's Services Facility", "Bakery", "Daycare Above and Under 2 Years", "Daycare (2 - 6 Years)", "Long Term Care"], range: ["#4E79A7", "#F28E2B", "#59A14F", "#E15759", "#76B7B2", "#EDC948", "#B07AA1", "#FF9DA7"] },
           title: 'Facility Type',
-          legend: { orient: 'right', offset: 8, labelFontSize: 11, titleFontSize: 12 }
+          legend: { orient: 'right', offset: 10,
+                    labelFontSize: 11, titleFontSize: 12,
+                    symbolStrokeWidth: 3,
+                    fillColor: '#fff', strokeColor: '#e8e6e0',
+                    padding: 8, cornerRadius: 4 }
         },
         tooltip: [
-          { field: 'Facility Type', type: 'nominal',      title: 'Facility Type' },
-          { field: 'Year',          type: 'ordinal',       title: 'Year' },
-          { field: 'Pass Rate',     type: 'quantitative',  title: 'Pass Rate (%)', format: '.1f' },
-          { field: 'Total',         type: 'quantitative',  title: '# Inspections', format: ',' }
+          { field: 'Facility Type', type: 'nominal',     title: 'Facility Type' },
+          { field: 'Year',          type: 'ordinal',     title: 'Year' },
+          { field: 'Pass Rate',     type: 'quantitative',title: 'Pass Rate (%)', format: '.1f' },
+          { field: 'Total',         type: 'quantitative',title: '# Inspections', format: ',' }
         ]
       }
     },
     {
       data: { values: [
         { Year: '2018', y: 96, label: '← July 2018: CDPH rule change' },
-        { Year: '2020', y: 82, label: '← 2020: COVID-19' }
+        { Year: '2020', y: 88, label: '← 2020: COVID-19' }
       ]},
       layer: [
-        { mark: { type: 'rule', color: '#c0392b', strokeDash: [5,3], strokeWidth: 1.4 },
-          encoding: { x: { field: 'Year', type: 'ordinal' } } },
-        { mark: { type: 'text', align: 'left', dx: 4, fontSize: 10, color: '#c0392b', fontStyle: 'italic' },
-          encoding: { x: { field: 'Year', type: 'ordinal' },
-                      y: { field: 'y', type: 'quantitative', scale: { domain: [0,100] } },
-                      text: { field: 'label', type: 'nominal' } } }
+        {
+          mark: { type: 'rule', color: '#c0392b', strokeDash: [5,3], strokeWidth: 1.5 },
+          encoding: { x: { field: 'Year', type: 'ordinal' } }
+        },
+        {
+          mark: { type: 'text', align: 'left', dx: 5,
+                  fontSize: 10.5, color: '#c0392b', fontStyle: 'italic' },
+          encoding: {
+            x: { field: 'Year', type: 'ordinal' },
+            y: { field: 'y', type: 'quantitative', scale: { domain: [0,100] } },
+            text: { field: 'label', type: 'nominal' }
+          }
+        }
       ]
     }
   ],
-  config: { view: { fill: '#F7F7F7', stroke: null }, axis: { gridColor: '#E6E6E6' } }
+  config: {
+    background: '#FAFAF7',
+    view: { fill: '#FAFAF7', stroke: null },
+    axis: { gridColor: '#E8E6E0' }
+  }
 };
 
 vegaEmbed('#vis', SPEC, { actions: false, renderer: 'svg' })
@@ -177,7 +302,9 @@ vegaEmbed('#vis', SPEC, { actions: false, renderer: 'svg' })
 
 function redraw() {
   if (!vegaView) return;
-  vegaView.change('table', vega.changeset().remove(() => true).insert(filtered())).run();
+  vegaView
+    .change('table', vega.changeset().remove(() => true).insert(filtered()))
+    .run();
 }
 </script>
 </body>

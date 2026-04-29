@@ -12,17 +12,20 @@ import altair as alt
 
 alt.data_transformers.disable_max_rows()
 
+# ============================================================
+# PATHS
+# ============================================================
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR   = os.path.join(SCRIPT_DIR, 'data')
 CHARTS_DIR = os.path.join(SCRIPT_DIR, 'charts')
 os.makedirs(CHARTS_DIR, exist_ok=True)
 
-def data_path(filename):
-    return os.path.join(DATA_DIR, filename)
+def data_path(f): return os.path.join(DATA_DIR, f)
+def chart_path(f): return os.path.join(CHARTS_DIR, f)
 
-def chart_path(filename):
-    return os.path.join(CHARTS_DIR, filename)
-
+# ============================================================
+# LOAD DATA
+# ============================================================
 driver_data      = pd.read_csv(data_path('driver_data.csv'))
 yearly_pass      = pd.read_csv(data_path('yearly_pass.csv'))
 before_after     = pd.read_csv(data_path('before_after.csv'))
@@ -31,6 +34,9 @@ active_uninsp    = pd.read_csv(data_path('active_uninspected.csv'))
 zip_coverage     = pd.read_csv(data_path('zip_coverage.csv'))
 uninspected_dots = pd.read_csv(data_path('uninspected_dots.csv'))
 
+# ============================================================
+# SHARED COLOURS & THEME
+# ============================================================
 FACILITY_ORDER = [
     'Restaurant', 'Grocery Store', 'School', "Children's Services Facility",
     'Bakery', 'Daycare Above and Under 2 Years', 'Daycare (2 - 6 Years)', 'Long Term Care'
@@ -40,10 +46,50 @@ FACILITY_RANGE = [
     '#76B7B2', '#EDC948', '#B07AA1', '#FF9DA7'
 ]
 FACILITY_COLOR_MAP = dict(zip(FACILITY_ORDER, FACILITY_RANGE))
-facility_colors = alt.Scale(domain=FACILITY_ORDER, range=FACILITY_RANGE)
+facility_colors    = alt.Scale(domain=FACILITY_ORDER, range=FACILITY_RANGE)
+
+BACKGROUND   = '#FAFAF7'
+GRID_COLOR   = '#E8E6E0'
+AXIS_COLOR   = '#555'
+TITLE_COLOR  = '#2c3e50'
+SUBTITLE_CLR = '#888'
+ACCENT_RED   = '#c0392b'
+
+
+def theme(chart, title=None, subtitle=None, fs=15, sfs=11, height=None):
+    props = {}
+    if height:
+        props['height'] = height
+    if title or subtitle:
+        props['title'] = alt.TitleParams(
+            text=title or '',
+            subtitle=subtitle or '',
+            fontSize=fs, subtitleFontSize=sfs,
+            subtitleColor=SUBTITLE_CLR,
+            anchor='start', color=TITLE_COLOR, offset=15,
+        )
+    if props:
+        chart = chart.properties(**props)
+    return (
+        chart
+        .configure_view(fill=BACKGROUND, stroke=None)
+        .configure_title(fontSize=fs, subtitleFontSize=sfs,
+                         subtitleColor=SUBTITLE_CLR,
+                         anchor='start', color=TITLE_COLOR)
+        .configure_axis(labelFontSize=11, titleFontSize=12,
+                        titleFontWeight='bold',
+                        labelColor=AXIS_COLOR, titleColor=AXIS_COLOR,
+                        gridColor=GRID_COLOR, tickColor=GRID_COLOR,
+                        domainColor='#ccc')
+        .configure_legend(labelFontSize=11, titleFontSize=12,
+                          labelColor=AXIS_COLOR, titleColor=TITLE_COLOR,
+                          symbolStrokeWidth=3, padding=8, cornerRadius=4,
+                          fillColor='#fff', strokeColor='#e8e6e0')
+    )
+
 
 # ============================================================
-# CHART 1 — Interactive single line chart with JS controls
+# CHART 1 — Interactive single line chart (dropdown + year filter)
 # ============================================================
 yearly_pass_records = yearly_pass.to_dict(orient='records')
 
@@ -54,49 +100,118 @@ CHART1_HTML = r"""<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   * { box-sizing: border-box; }
-  body { margin: 0; padding: 0; font-family: Arial, sans-serif; background: transparent; }
+  body {
+    margin: 0; padding: 0;
+    font-family: Arial, sans-serif;
+    background: #FAFAF7; color: #111;
+  }
+  .chart-title {
+    font-family: Georgia, serif;
+    font-size: 1.15rem; font-weight: bold;
+    color: #2c3e50; margin: 0 0 0.2rem;
+  }
+  .chart-subtitle {
+    font-family: Arial, sans-serif;
+    font-size: 0.78rem; color: #888; margin: 0 0 1rem;
+  }
   .controls {
-    display: flex; flex-wrap: wrap; gap: 1.25rem;
-    padding: 0.75rem 0 1.25rem; align-items: flex-start;
+    display: flex; flex-wrap: wrap;
+    gap: 1rem; align-items: flex-end;
+    margin-bottom: 0.6rem;
   }
-  .ctrl-group { display: flex; flex-direction: column; gap: 0.45rem; }
+  .ctrl-group { display: flex; flex-direction: column; gap: 0.35rem; }
   .ctrl-label {
-    font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.1em; color: #666;
+    font-size: 0.68rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em; color: #666;
   }
-  .pill-row { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-  .pill {
-    border: 2px solid; border-radius: 20px; padding: 0.22rem 0.7rem;
-    font-size: 0.75rem; cursor: pointer; background: white;
-    transition: background 0.15s, color 0.15s;
-    font-family: Arial, sans-serif; white-space: nowrap;
+  .dropdown-wrapper { position: relative; }
+  .dropdown-trigger {
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 0.5rem;
+    padding: 0.38rem 0.75rem;
+    border: 1.5px solid #ccc; border-radius: 6px;
+    background: #fff; cursor: pointer;
+    font-size: 0.82rem; font-family: Arial, sans-serif;
+    min-width: 230px; user-select: none; color: #333;
   }
-  .pill.on { color: #fff !important; }
+  .dropdown-trigger:hover { border-color: #999; }
+  .dropdown-trigger .arrow { font-size: 0.6rem; color: #aaa; }
+  .dropdown-menu {
+    display: none;
+    position: absolute; top: calc(100% + 4px); left: 0;
+    background: #fff;
+    border: 1.5px solid #ddd; border-radius: 6px;
+    box-shadow: 0 4px 18px rgba(0,0,0,.11);
+    z-index: 999; min-width: 250px;
+    padding: 0.4rem 0;
+    max-height: 340px; overflow-y: auto;
+  }
+  .dropdown-menu.open { display: block; }
+  .dropdown-item {
+    display: flex; align-items: center; gap: 0.55rem;
+    padding: 0.42rem 0.9rem; cursor: pointer;
+    font-size: 0.82rem; font-family: Arial, sans-serif;
+    transition: background 0.1s;
+  }
+  .dropdown-item:hover { background: #f5f5f5; }
+  .color-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+  .dropdown-item input[type="checkbox"] { cursor: pointer; }
+  .dropdown-divider { border: none; border-top: 1px solid #eee; margin: 0.3rem 0; }
+  .dropdown-action {
+    padding: 0.3rem 0.9rem;
+    font-size: 0.75rem; color: #c0392b;
+    cursor: pointer; font-family: Arial, sans-serif;
+  }
+  .dropdown-action:hover { text-decoration: underline; }
   .year-row { display: flex; align-items: center; gap: 0.5rem; }
   .year-input {
-    width: 62px; padding: 0.3rem 0.4rem; border: 1px solid #ccc;
-    border-radius: 4px; font-size: 0.85rem; text-align: center;
-    font-family: Arial, sans-serif;
+    width: 65px; padding: 0.35rem 0.4rem;
+    border: 1.5px solid #ccc; border-radius: 6px;
+    font-size: 0.82rem; text-align: center;
+    font-family: Arial, sans-serif; color: #333;
   }
-  .year-sep { color: #888; font-size: 0.82rem; }
+  .year-sep { color: #aaa; font-size: 0.8rem; }
   .reset-btn {
-    border: 1px solid #ccc; border-radius: 4px; padding: 0.28rem 0.75rem;
-    font-size: 0.75rem; cursor: pointer; background: #f5f5f5;
-    font-family: Arial, sans-serif; align-self: flex-end;
+    padding: 0.38rem 0.85rem;
+    border: 1.5px solid #ddd; border-radius: 6px;
+    background: #f7f7f7; font-size: 0.78rem;
+    cursor: pointer; font-family: Arial, sans-serif; color: #555;
   }
-  .reset-btn:hover { background: #e8e8e8; }
+  .reset-btn:hover { background: #eee; }
+  .warn {
+    font-size: 0.78rem; color: #c0392b;
+    font-style: italic; min-height: 1.1rem; margin-bottom: 0.3rem;
+  }
   #vis { width: 100%; }
   .vega-embed { width: 100% !important; }
   .vega-embed canvas, .vega-embed svg { width: 100% !important; }
-  .chart-note { font-size: 0.75rem; color: #888; font-style: italic; margin-top: 0.4rem; }
+  .chart-note {
+    font-size: 0.75rem; color: #999;
+    font-style: italic; margin-top: 0.5rem;
+    font-family: Arial, sans-serif;
+  }
 </style>
 </head>
 <body>
 
+<p class="chart-title">Pass Rate Across 8 Chicago Facility Types, 2010–2025</p>
+<p class="chart-subtitle">Use the controls to focus on specific facility types or a time window. Hover any point for details.</p>
+
 <div class="controls">
   <div class="ctrl-group">
     <div class="ctrl-label">Facility Type</div>
-    <div class="pill-row" id="pills"></div>
+    <div class="dropdown-wrapper">
+      <div class="dropdown-trigger" id="dd-trigger" onclick="toggleDropdown()">
+        <span id="dd-label">All 8 facility types</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="dropdown-menu" id="dd-menu">
+        <div class="dropdown-action" onclick="selectAll()">✓ Select all</div>
+        <div class="dropdown-action" onclick="clearAll()">✗ Clear all</div>
+        <hr class="dropdown-divider">
+        <div id="dd-items"></div>
+      </div>
+    </div>
   </div>
   <div class="ctrl-group">
     <div class="ctrl-label">Year Range</div>
@@ -106,118 +221,174 @@ CHART1_HTML = r"""<!DOCTYPE html>
       <input type="number" id="yr-to" class="year-input" value="2025" min="2010" max="2025">
     </div>
   </div>
-  <div class="ctrl-group" style="align-self:flex-end;">
-    <button class="reset-btn" onclick="reset()">Reset all</button>
+  <div class="ctrl-group" style="align-self:flex-end">
+    <button class="reset-btn" onclick="resetAll()">Reset all</button>
   </div>
 </div>
 
+<div class="warn" id="warn-msg"></div>
 <div id="vis"></div>
-<p class="chart-note">Click a facility pill to show/hide it. Hover any point for exact pass rate and inspection count.</p>
+<p class="chart-note">
+  Select/deselect facility types (at least 1 must remain selected).
+  Hover any point for exact pass rate and inspection count.
+</p>
 
 <script src="https://cdn.jsdelivr.net/npm/vega@5/build/vega.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-lite@5/build/vega-lite.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-embed@6/build/vega-embed.min.js"></script>
 
 <script>
-const ALL_DATA = __DATA__;
+const ALL_DATA   = __DATA__;
 const FAC_COLORS = __COLORS__;
-const ALL_FACS = __FACS__;
+const ALL_FACS   = __FACS__;
 
-let active = new Set(ALL_FACS);
+let active   = new Set(ALL_FACS);
 let vegaView = null;
 
-const pillRow = document.getElementById('pills');
+const ddItems = document.getElementById('dd-items');
 ALL_FACS.forEach(fac => {
-  const btn = document.createElement('button');
-  btn.className = 'pill on';
-  btn.textContent = fac;
-  btn.dataset.fac = fac;
-  const col = FAC_COLORS[fac];
-  btn.style.borderColor = col;
-  btn.style.backgroundColor = col;
-  btn.style.color = '#fff';
-  btn.addEventListener('click', () => {
-    if (active.has(fac)) {
-      active.delete(fac);
-      btn.classList.remove('on');
-      btn.style.backgroundColor = '#fff';
-      btn.style.color = col;
-    } else {
-      active.add(fac);
-      btn.classList.add('on');
-      btn.style.backgroundColor = col;
-      btn.style.color = '#fff';
+  const item = document.createElement('div');
+  item.className = 'dropdown-item';
+  item.innerHTML = `
+    <input type="checkbox" id="chk-${fac}" checked>
+    <span class="color-dot" style="background:${FAC_COLORS[fac]}"></span>
+    <label for="chk-${fac}" style="cursor:pointer;flex:1">${fac}</label>
+  `;
+  item.querySelector('input').addEventListener('change', e => {
+    if (!e.target.checked && active.size === 1) {
+      e.target.checked = true;
+      showWarn('At least one facility type must remain selected.');
+      return;
     }
-    redraw();
+    clearWarn();
+    if (e.target.checked) active.add(fac);
+    else active.delete(fac);
+    updateLabel(); redraw();
   });
-  pillRow.appendChild(btn);
+  ddItems.appendChild(item);
 });
+
+function toggleDropdown() {
+  document.getElementById('dd-menu').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.dropdown-wrapper'))
+    document.getElementById('dd-menu').classList.remove('open');
+});
+
+function updateLabel() {
+  const n = active.size;
+  document.getElementById('dd-label').textContent =
+    n === ALL_FACS.length ? 'All 8 facility types' :
+    n === 1 ? [...active][0] : `${n} facility types selected`;
+}
+
+function selectAll() {
+  active = new Set(ALL_FACS);
+  document.querySelectorAll('#dd-items input').forEach(c => c.checked = true);
+  updateLabel(); redraw();
+}
+
+function clearAll() {
+  const first = ALL_FACS[0];
+  active = new Set([first]);
+  document.querySelectorAll('#dd-items input').forEach((c,i) => c.checked = i === 0);
+  updateLabel(); redraw();
+  showWarn('At least one facility type must remain selected.');
+}
+
+function resetAll() {
+  selectAll();
+  document.getElementById('yr-from').value = 2010;
+  document.getElementById('yr-to').value   = 2025;
+  clearWarn(); redraw();
+}
+
+function showWarn(msg) {
+  document.getElementById('warn-msg').textContent = msg;
+  setTimeout(clearWarn, 2500);
+}
+function clearWarn() {
+  document.getElementById('warn-msg').textContent = '';
+}
 
 document.getElementById('yr-from').addEventListener('change', redraw);
 document.getElementById('yr-to').addEventListener('change', redraw);
 
-function reset() {
-  active = new Set(ALL_FACS);
-  document.querySelectorAll('.pill').forEach(btn => {
-    const col = FAC_COLORS[btn.dataset.fac];
-    btn.classList.add('on');
-    btn.style.backgroundColor = col;
-    btn.style.color = '#fff';
-  });
-  document.getElementById('yr-from').value = 2010;
-  document.getElementById('yr-to').value = 2025;
-  redraw();
-}
-
 function filtered() {
   const fy = +document.getElementById('yr-from').value;
   const ty = +document.getElementById('yr-to').value;
-  return ALL_DATA.filter(d => active.has(d['Facility Type']) && d.Year >= fy && d.Year <= ty);
+  return ALL_DATA.filter(d =>
+    active.has(d['Facility Type']) && d.Year >= fy && d.Year <= ty
+  );
 }
 
 const SPEC = {
   $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
-  width: 'container', height: 390,
+  width: 'container', height: 420,
   data: { name: 'table' },
   layer: [
     {
-      mark: { type: 'line', point: { size: 65, filled: true }, strokeWidth: 2.5 },
+      mark: { type: 'line', point: { size: 70, filled: true }, strokeWidth: 2.5 },
       encoding: {
-        x: { field: 'Year', type: 'ordinal', title: 'Year',
-             axis: { labelAngle: -45, titlePadding: 12, labelFontSize: 11, titleFontSize: 13 } },
-        y: { field: 'Pass Rate', type: 'quantitative', title: 'Pass Rate (%)',
-             scale: { domain: [0, 100] },
-             axis: { tickCount: 6, labelFontSize: 11, titleFontSize: 13, titleFontWeight: 'bold' } },
+        x: {
+          field: 'Year', type: 'ordinal', title: 'Year',
+          axis: { labelAngle: -45, titlePadding: 12,
+                  labelFontSize: 11, titleFontSize: 13,
+                  titleFontWeight: 'bold', gridColor: '#E8E6E0' }
+        },
+        y: {
+          field: 'Pass Rate', type: 'quantitative', title: 'Pass Rate (%)',
+          scale: { domain: [0, 100] },
+          axis: { tickCount: 6, labelFontSize: 11,
+                  titleFontSize: 13, titleFontWeight: 'bold',
+                  gridColor: '#E8E6E0' }
+        },
         color: {
           field: 'Facility Type', type: 'nominal',
           scale: { domain: __DOMAIN__, range: __RANGE__ },
           title: 'Facility Type',
-          legend: { orient: 'right', offset: 8, labelFontSize: 11, titleFontSize: 12 }
+          legend: { orient: 'right', offset: 10,
+                    labelFontSize: 11, titleFontSize: 12,
+                    symbolStrokeWidth: 3,
+                    fillColor: '#fff', strokeColor: '#e8e6e0',
+                    padding: 8, cornerRadius: 4 }
         },
         tooltip: [
-          { field: 'Facility Type', type: 'nominal',      title: 'Facility Type' },
-          { field: 'Year',          type: 'ordinal',       title: 'Year' },
-          { field: 'Pass Rate',     type: 'quantitative',  title: 'Pass Rate (%)', format: '.1f' },
-          { field: 'Total',         type: 'quantitative',  title: '# Inspections', format: ',' }
+          { field: 'Facility Type', type: 'nominal',     title: 'Facility Type' },
+          { field: 'Year',          type: 'ordinal',     title: 'Year' },
+          { field: 'Pass Rate',     type: 'quantitative',title: 'Pass Rate (%)', format: '.1f' },
+          { field: 'Total',         type: 'quantitative',title: '# Inspections', format: ',' }
         ]
       }
     },
     {
       data: { values: [
         { Year: '2018', y: 96, label: '← July 2018: CDPH rule change' },
-        { Year: '2020', y: 82, label: '← 2020: COVID-19' }
+        { Year: '2020', y: 88, label: '← 2020: COVID-19' }
       ]},
       layer: [
-        { mark: { type: 'rule', color: '#c0392b', strokeDash: [5,3], strokeWidth: 1.4 },
-          encoding: { x: { field: 'Year', type: 'ordinal' } } },
-        { mark: { type: 'text', align: 'left', dx: 4, fontSize: 10, color: '#c0392b', fontStyle: 'italic' },
-          encoding: { x: { field: 'Year', type: 'ordinal' },
-                      y: { field: 'y', type: 'quantitative', scale: { domain: [0,100] } },
-                      text: { field: 'label', type: 'nominal' } } }
+        {
+          mark: { type: 'rule', color: '#c0392b', strokeDash: [5,3], strokeWidth: 1.5 },
+          encoding: { x: { field: 'Year', type: 'ordinal' } }
+        },
+        {
+          mark: { type: 'text', align: 'left', dx: 5,
+                  fontSize: 10.5, color: '#c0392b', fontStyle: 'italic' },
+          encoding: {
+            x: { field: 'Year', type: 'ordinal' },
+            y: { field: 'y', type: 'quantitative', scale: { domain: [0,100] } },
+            text: { field: 'label', type: 'nominal' }
+          }
+        }
       ]
     }
   ],
-  config: { view: { fill: '#F7F7F7', stroke: null }, axis: { gridColor: '#E6E6E6' } }
+  config: {
+    background: '#FAFAF7',
+    view: { fill: '#FAFAF7', stroke: null },
+    axis: { gridColor: '#E8E6E0' }
+  }
 };
 
 vegaEmbed('#vis', SPEC, { actions: false, renderer: 'svg' })
@@ -226,7 +397,9 @@ vegaEmbed('#vis', SPEC, { actions: false, renderer: 'svg' })
 
 function redraw() {
   if (!vegaView) return;
-  vegaView.change('table', vega.changeset().remove(() => true).insert(filtered())).run();
+  vegaView
+    .change('table', vega.changeset().remove(() => true).insert(filtered()))
+    .run();
 }
 </script>
 </body>
@@ -252,85 +425,124 @@ print("[OK] main_dashboard.html")
 
 
 # ============================================================
-# CHART 2 — Dumbbell chart (2017 vs 2019)
+# CHART 1b — Citywide average overview timeline
+# ============================================================
+agg = (
+    yearly_pass.assign(weighted=yearly_pass['Pass Rate'] * yearly_pass['Total'])
+    .groupby('Year', as_index=False)
+    .agg(weighted_sum=('weighted','sum'), total_sum=('Total','sum'))
+)
+agg['Pass Rate'] = agg['weighted_sum'] / agg['total_sum']
+agg = agg[['Year', 'Pass Rate']]
+
+overview_line = (
+    alt.Chart(agg)
+    .mark_line(color='#2c3e50', strokeWidth=3, point=True)
+    .encode(
+        x=alt.X('Year:O', title='Year',
+                axis=alt.Axis(labelAngle=-45, titlePadding=12)),
+        y=alt.Y('Pass Rate:Q', title='Avg Pass Rate (%)',
+                scale=alt.Scale(domain=[0,100])),
+        tooltip=[alt.Tooltip('Year:O'), alt.Tooltip('Pass Rate:Q', format='.1f')]
+    )
+)
+
+annotations = pd.DataFrame([
+    {'Year': 2018, 'label': '2018: New CDPH violation rules', 'y_pos': 92},
+    {'Year': 2020, 'label': '2020: COVID-19',                 'y_pos': 78}
+])
+ann_rules = alt.Chart(annotations).mark_rule(
+    color=ACCENT_RED, strokeDash=[4,4], strokeWidth=1.5
+).encode(x='Year:O')
+ann_text = alt.Chart(annotations).mark_text(
+    align='left', dx=6, color=ACCENT_RED, fontSize=11, fontWeight='bold'
+).encode(x='Year:O', y=alt.Y('y_pos:Q'), text='label:N')
+
+overview = theme(
+    (overview_line + ann_rules + ann_text).properties(width='container', height=210),
+    title='Citywide Average Pass Rate (2010–2025)',
+    subtitle='Weighted average across all 8 facility types. The 2018 cliff and 2020 COVID dip are clearly visible.',
+)
+overview.save(chart_path('overview_timeline.html'))
+print("[OK] overview_timeline.html")
+
+
+# ============================================================
+# CHART 2 — Dumbbell (2017 vs 2019)
 # ============================================================
 ba_long = before_after.melt(
-    id_vars=['Facility Type', 'Drop'],
-    value_vars=['Pass_2017', 'Pass_2019'],
+    id_vars=['Facility Type','Drop'],
+    value_vars=['Pass_2017','Pass_2019'],
     var_name='Year', value_name='Pass Rate'
 )
-ba_long['Year'] = ba_long['Year'].map({'Pass_2017': '2017', 'Pass_2019': '2019'})
+ba_long['Year'] = ba_long['Year'].map({'Pass_2017':'2017','Pass_2019':'2019'})
 
-bars = alt.Chart(before_after).mark_bar(height=4, color='#bbb').encode(
+bars = alt.Chart(before_after).mark_bar(height=3, color=GRID_COLOR).encode(
     y=alt.Y('Facility Type:N', sort=alt.SortField('Drop', order='descending'), title=None),
-    x=alt.X('Pass_2019:Q', title='Pass Rate (%)', scale=alt.Scale(domain=[0, 100])),
+    x=alt.X('Pass_2019:Q', title='Pass Rate (%)', scale=alt.Scale(domain=[0,100])),
     x2='Pass_2017:Q'
 )
 dots = alt.Chart(ba_long).mark_circle(size=200, opacity=1).encode(
     y=alt.Y('Facility Type:N', sort=alt.SortField('Drop', order='descending'), title=None),
     x=alt.X('Pass Rate:Q'),
     color=alt.Color('Year:N',
-                    scale=alt.Scale(domain=['2017', '2019'], range=['#27ae60', '#c0392b']),
+                    scale=alt.Scale(domain=['2017','2019'],
+                                    range=['#27ae60', ACCENT_RED]),
                     legend=alt.Legend(title='Year', orient='top')),
-    tooltip=['Facility Type:N', 'Year:N', alt.Tooltip('Pass Rate:Q', format='.1f')]
+    tooltip=['Facility Type:N','Year:N',
+             alt.Tooltip('Pass Rate:Q', format='.1f', title='Pass Rate (%)')]
 )
-labels = alt.Chart(before_after).mark_text(
-    align='left', dx=8, fontSize=11, fontWeight='bold', color='#c0392b'
+drop_labels = alt.Chart(before_after).mark_text(
+    align='left', dx=8, fontSize=11, fontWeight='bold', color=ACCENT_RED
 ).encode(
     y=alt.Y('Facility Type:N', sort=alt.SortField('Drop', order='descending')),
     x='Pass_2017:Q',
     text=alt.Text('Drop:Q', format='.1f')
 )
-dumbbell = (bars + dots + labels).properties(
-    width='container', height=320,
-    title=alt.TitleParams(
-        text='Two Years, One Rule Change',
-        subtitle='Pass rates collapsed across every facility type between 2017 and 2019. Numbers show percentage-point drop.',
-        fontSize=16, anchor='start', color='#2c3e50'
-    )
-).configure_view(stroke=None).configure_axis(grid=True, gridColor='#EEE')
+dumbbell = theme(
+    (bars + dots + drop_labels).properties(width='container', height=320),
+    title='Two Years, One Rule Change',
+    subtitle='Pass rates collapsed between 2017 and 2019. Numbers = percentage-point drop.',
+)
 dumbbell.save(chart_path('before_after.html'))
 print("[OK] before_after.html")
 
 
 # ============================================================
-# CHART 3 — Heatmap
+# CHART 3 — Heatmap (Facility × Year)
 # ============================================================
-heatmap = alt.Chart(yearly_pass).mark_rect().encode(
-    x=alt.X('Year:O', title='Year'),
+rect = alt.Chart(yearly_pass).mark_rect(stroke='#fff', strokeWidth=0.8).encode(
+    x=alt.X('Year:O', title='Year', axis=alt.Axis(labelAngle=-45)),
     y=alt.Y('Facility Type:N', sort=FACILITY_ORDER, title=None),
     color=alt.Color('Pass Rate:Q',
-                    scale=alt.Scale(scheme='redyellowgreen', domain=[0, 100]),
-                    legend=alt.Legend(title='Pass Rate (%)', orient='right')),
-    tooltip=[alt.Tooltip('Facility Type:N'), alt.Tooltip('Year:O'),
-             alt.Tooltip('Pass Rate:Q', format='.1f'),
-             alt.Tooltip('Total:Q', title='Inspections', format=',')]
-).properties(
-    width='container', height=320,
-    title=alt.TitleParams(
-        text='Where the Failures Concentrated',
-        subtitle='Red = low pass rate, green = high. The 2018–2019 column lights up red across nearly every row.',
-        fontSize=16, anchor='start', color='#2c3e50'
-    )
+                    scale=alt.Scale(scheme='redyellowgreen', domain=[0,100]),
+                    legend=alt.Legend(title='Pass Rate (%)', orient='right',
+                                      gradientLength=200)),
+    tooltip=[alt.Tooltip('Facility Type:N'),
+             alt.Tooltip('Year:O'),
+             alt.Tooltip('Pass Rate:Q', format='.1f', title='Pass Rate (%)'),
+             alt.Tooltip('Total:Q', format=',', title='Inspections')]
 )
-heatmap_text = alt.Chart(yearly_pass).mark_text(fontSize=9).encode(
+text_hm = alt.Chart(yearly_pass).mark_text(fontSize=9.5).encode(
     x='Year:O',
     y=alt.Y('Facility Type:N', sort=FACILITY_ORDER),
     text=alt.Text('Pass Rate:Q', format='.0f'),
     color=alt.condition(
-        'datum["Pass Rate"] < 35 || datum["Pass Rate"] > 75',
-        alt.value('white'), alt.value('black')
+        'datum["Pass Rate"] < 40 || datum["Pass Rate"] > 72',
+        alt.value('white'), alt.value('#333')
     )
 )
-heatmap_full = (heatmap + heatmap_text).configure_view(stroke=None).configure_axis(
-    labelFontSize=11, titleFontSize=12, labelLimit=200
+heatmap = theme(
+    (rect + text_hm).properties(width='container', height=300),
+    title='Where the Failures Concentrated',
+    subtitle='Red = low pass rate, green = high. The 2018–2019 column is red across nearly every row.',
 )
-heatmap_full.save(chart_path('heatmap.html'))
+heatmap.save(chart_path('heatmap.html'))
 print("[OK] heatmap.html")
 
 
 # ============================================================
-# CHART 4 — Pictograph
+# CHART 4 — Pictograph (first-inspection outcomes)
 # ============================================================
 group_order = [
     'All Chicago Food Businesses',
@@ -340,7 +552,7 @@ group_order = [
 ]
 result_palette = alt.Scale(
     domain=['Pass', 'Pass w/ Conditions', 'Fail'],
-    range=['#27ae60', '#f39c12', '#c0392b']
+    range=['#27ae60', '#f39c12', ACCENT_RED]
 )
 inner = alt.Chart(pictograph_df).mark_point(
     filled=True, size=110, shape='square'
@@ -349,81 +561,88 @@ inner = alt.Chart(pictograph_df).mark_point(
     y=alt.Y('Row:O', axis=None, sort='descending'),
     color=alt.Color('Result:N', scale=result_palette,
                     legend=alt.Legend(title=None, orient='top',
-                                      labelFontSize=12, symbolSize=120)),
-    tooltip=[alt.Tooltip('Group:N', title='Group'),
+                                      labelFontSize=12, symbolSize=130)),
+    tooltip=[alt.Tooltip('Group:N', title='Category'),
              alt.Tooltip('Result:N', title='Outcome'),
              alt.Tooltip('N_total:Q', title='Sample size', format=',')]
 ).properties(width=240, height=240)
 
-pictograph = inner.facet(
-    facet=alt.Facet('Group:N', title=None, sort=group_order,
-                    header=alt.Header(labelFontSize=13, labelFontWeight='bold',
-                                      labelLimit=300, labelPadding=10)),
-    columns=2,
-    title=alt.TitleParams(
-        text='Of Every 100 New Chicago Food Businesses, How Many Pass on Day One?',
-        subtitle=('Each square represents 1% of first-ever inspections in that category. '
-                  'Green = clean pass, amber = pass with conditions, red = fail.'),
-        fontSize=15, anchor='start', color='#2c3e50',
-        subtitleFontSize=11, subtitleColor='#666'
+pictograph = (
+    inner.facet(
+        facet=alt.Facet('Group:N', title=None, sort=group_order,
+                        header=alt.Header(labelFontSize=13, labelFontWeight='bold',
+                                          labelLimit=320, labelPadding=12,
+                                          labelColor=TITLE_COLOR)),
+        columns=2,
     )
-).resolve_scale(x='shared', y='shared').configure_view(stroke=None)
+    .resolve_scale(x='shared', y='shared')
+    .properties(
+        title=alt.TitleParams(
+            text='Of Every 100 New Chicago Food Businesses, How Many Pass on Day One?',
+            subtitle='Each square = 1% of first-ever inspections. Green = pass, amber = conditions, red = fail.',
+            fontSize=15, subtitleFontSize=11,
+            subtitleColor=SUBTITLE_CLR,
+            anchor='start', color=TITLE_COLOR,
+        )
+    )
+    .configure_view(stroke=None, fill=BACKGROUND)
+    .configure_title(fontSize=15, subtitleFontSize=11,
+                     subtitleColor=SUBTITLE_CLR,
+                     anchor='start', color=TITLE_COLOR)
+    .configure_legend(labelFontSize=12, titleFontSize=12,
+                      fillColor='#fff', strokeColor='#e8e6e0',
+                      padding=8, cornerRadius=4)
+)
 pictograph.save(chart_path('pictograph_first_inspection.html'))
 print("[OK] pictograph_first_inspection.html")
 
 
 # ============================================================
-# CHART 5 — Active-uninspected bars
+# CHART 5 — Active-uninspected horizontal bars
 # ============================================================
-sort_order = active_uninsp.sort_values(
-    'Pct Never Inspected', ascending=False
-)['Display Label'].tolist()
-
-uninsp_bars = alt.Chart(active_uninsp).mark_bar(
-    color='#c0392b', cornerRadiusTopRight=3, cornerRadiusBottomRight=3
-).encode(
-    y=alt.Y('Display Label:N', sort=sort_order, title=None,
-            axis=alt.Axis(labelLimit=320, labelFontSize=12)),
-    x=alt.X('Pct Never Inspected:Q',
-            title='% of active mature licenses never inspected',
-            scale=alt.Scale(domain=[0, 100])),
-    tooltip=[
-        alt.Tooltip('Display Label:N',       title='Category'),
-        alt.Tooltip('Active Licenses:Q',     title='Active mature licenses', format=','),
-        alt.Tooltip('Inspected:Q',           title='Inspected',              format=','),
-        alt.Tooltip('Never Inspected:Q',     title='Never inspected',        format=','),
-        alt.Tooltip('Pct Never Inspected:Q', title='% never inspected',      format='.1f')
-    ]
+sort_order = (
+    active_uninsp.sort_values('Pct Never Inspected', ascending=False)
+    ['Display Label'].tolist()
 )
 active_uninsp['count_label'] = (
     active_uninsp['Never Inspected'].astype(int).astype(str)
     + ' of '
     + active_uninsp['Active Licenses'].astype(int).map('{:,}'.format)
 )
+
+uninsp_bars = alt.Chart(active_uninsp).mark_bar(
+    color=ACCENT_RED, cornerRadiusTopRight=4, cornerRadiusBottomRight=4
+).encode(
+    y=alt.Y('Display Label:N', sort=sort_order, title=None,
+            axis=alt.Axis(labelLimit=340, labelFontSize=12)),
+    x=alt.X('Pct Never Inspected:Q',
+            title='% of active mature licenses never inspected',
+            scale=alt.Scale(domain=[0,100])),
+    tooltip=[
+        alt.Tooltip('Display Label:N',       title='Category'),
+        alt.Tooltip('Active Licenses:Q',     title='Active licenses',  format=','),
+        alt.Tooltip('Never Inspected:Q',     title='Never inspected',  format=','),
+        alt.Tooltip('Pct Never Inspected:Q', title='% never inspected',format='.1f'),
+    ]
+)
 count_labels = alt.Chart(active_uninsp).mark_text(
-    align='left', dx=8, fontSize=11, color='#444'
+    align='left', dx=7, fontSize=11, color='#444'
 ).encode(
     y=alt.Y('Display Label:N', sort=sort_order),
-    x=alt.X('Pct Never Inspected:Q'),
+    x='Pct Never Inspected:Q',
     text='count_label:N'
 )
-uninspected_chart = alt.layer(uninsp_bars, count_labels).properties(
-    width='container', height=280,
-    title=alt.TitleParams(
-        text="Where Chicago's Inspection Gaps Concentrate",
-        subtitle='Share of long-active food licenses (2+ years) that have never received a CDPH inspection.',
-        fontSize=15, anchor='start', color='#2c3e50',
-        subtitleFontSize=11, subtitleColor='#666'
-    )
-).configure_view(stroke=None).configure_axis(
-    grid=True, gridColor='#EEE', labelFontSize=11, titleFontSize=12
+uninspected_chart = theme(
+    alt.layer(uninsp_bars, count_labels).properties(width='container', height=280),
+    title="Where Chicago's Inspection Gaps Concentrate",
+    subtitle='Share of long-active food licenses (2+ years) never receiving a CDPH inspection.',
 )
 uninspected_chart.save(chart_path('active_uninspected.html'))
 print("[OK] active_uninspected.html")
 
 
 # ============================================================
-# CHART 6 — ZIP map
+# CHART 6 — ZIP choropleth + dots map
 # ============================================================
 GEOJSON_PATH = data_path('chicago_zips.geojson')
 with open(GEOJSON_PATH, 'r', encoding='utf-8') as f:
@@ -434,43 +653,57 @@ print("GeoJSON property keys:", list(chicago_geo['features'][0]['properties'].ke
 zip_coverage['zip_code'] = zip_coverage['zip_code'].astype(str)
 uninspected_dots['latitude']  = pd.to_numeric(uninspected_dots['latitude'],  errors='coerce')
 uninspected_dots['longitude'] = pd.to_numeric(uninspected_dots['longitude'], errors='coerce')
-uninspected_dots = uninspected_dots.dropna(subset=['latitude', 'longitude'])
+uninspected_dots = uninspected_dots.dropna(subset=['latitude','longitude'])
 
 geo_data = alt.Data(values=chicago_geo['features'])
 
-choropleth = alt.Chart(geo_data).mark_geoshape(stroke='white', strokeWidth=0.5).encode(
+choropleth = alt.Chart(geo_data).mark_geoshape(
+    stroke='white', strokeWidth=0.6
+).encode(
     color=alt.Color('pct_uninspected:Q',
-                    scale=alt.Scale(scheme='reds', domain=[0, 10], clamp=True),
-                    legend=alt.Legend(title='% never inspected', orient='right', format='.0f')),
+                    scale=alt.Scale(scheme='reds', domain=[0,10], clamp=True),
+                    legend=alt.Legend(title='% never inspected',
+                                      orient='right', format='.0f',
+                                      gradientLength=200)),
     tooltip=[
         alt.Tooltip('properties.ZIP:N',  title='ZIP code'),
-        alt.Tooltip('total_active:Q',    title='Active Retail Food licenses', format=','),
-        alt.Tooltip('uninspected:Q',     title='Never inspected',             format=','),
-        alt.Tooltip('pct_uninspected:Q', title='% never inspected',           format='.1f')
+        alt.Tooltip('total_active:Q',    title='Active licenses',   format=','),
+        alt.Tooltip('uninspected:Q',     title='Never inspected',   format=','),
+        alt.Tooltip('pct_uninspected:Q', title='% never inspected', format='.1f'),
     ]
 ).transform_lookup(
     lookup='properties.ZIP',
     from_=alt.LookupData(zip_coverage, 'zip_code',
-                         ['total_active', 'uninspected', 'pct_uninspected'])
+                         ['total_active','uninspected','pct_uninspected'])
 ).project(type='mercator').properties(width='container', height=720)
 
 dots_layer = alt.Chart(uninspected_dots).mark_circle(
-    color='#2c3e50', opacity=0.7, size=18, stroke='white', strokeWidth=0.5
+    color='#2c3e50', opacity=0.72, size=20, stroke='white', strokeWidth=0.5
 ).encode(
     longitude='longitude:Q', latitude='latitude:Q',
-    tooltip=[alt.Tooltip('zip_code:N', title='ZIP'),
-             alt.Tooltip('license_number:Q', title='License #')]
+    tooltip=[alt.Tooltip('zip_code:N', title='ZIP')]
 )
-map_chart = alt.layer(choropleth, dots_layer).properties(
-    title=alt.TitleParams(
-        text="Where Chicago's Uninspected Restaurants Live",
-        subtitle=("Each dot is a long-active retail food business that has never been inspected. "
-                  "ZIP fill = share of that ZIP's licensed retail food businesses never inspected."),
-        fontSize=15, anchor='start', color='#2c3e50',
-        subtitleFontSize=11, subtitleColor='#666'
+
+map_chart = (
+    alt.layer(choropleth, dots_layer)
+    .properties(
+        title=alt.TitleParams(
+            text="Where Chicago's Uninspected Restaurants Live",
+            subtitle=("Each dot = long-active retail food business never inspected. "
+                      "ZIP fill = share of that ZIP's licenses never inspected."),
+            fontSize=15, subtitleFontSize=11,
+            anchor='start', color=TITLE_COLOR,
+        )
     )
-).configure_view(stroke=None)
+    .configure_view(stroke=None)
+    .configure_title(fontSize=15, subtitleFontSize=11,
+                     subtitleColor=SUBTITLE_CLR,
+                     anchor='start', color=TITLE_COLOR)
+    .configure_legend(labelFontSize=11, titleFontSize=12,
+                      fillColor='#fff', strokeColor='#e8e6e0',
+                      padding=8, cornerRadius=4)
+)
 map_chart.save(chart_path('chicago_inspection_map.html'))
 print("[OK] chicago_inspection_map.html")
 
-print(f"\nDone — 6 HTML files written to: {CHARTS_DIR}")
+print(f"\nDone — all HTML files written to: {CHARTS_DIR}")

@@ -430,35 +430,7 @@ result_palette = alt.Scale(
     range=['#27ae60', '#f39c12', ACCENT_RED]
 )
 
-# compute summary % per group+result
-pct_summary = (
-    pictograph_df.groupby(['Group', 'Result'])
-    .size()
-    .reset_index(name='Pct')
-)
-
-# create label rows: place them at Row=11 (below the grid)
-label_rows = []
-for _, row in pct_summary.iterrows():
-    label_rows.append({
-        'Group':    row['Group'],
-        'Result':   row['Result'],
-        'Col':      0,
-        'Row':      11,
-        'N_total':  0,
-        'icon_index': -1,
-        'Position': -1,
-        'label':    f"{row['Result']}: {int(row['Pct'])}%"
-    })
-label_df = pd.DataFrame(label_rows)
-
-# add label column to main df (empty for normal rows)
-pictograph_df['label'] = ''
-label_df_full = pd.concat([pictograph_df, label_df], ignore_index=True)
-
-squares = alt.Chart(label_df_full).mark_point(
-    filled=True, size=110, shape='square'
-).encode(
+inner = alt.Chart(pictograph_df).mark_point(filled=True, size=110, shape='square').encode(
     x=alt.X('Col:O', axis=None),
     y=alt.Y('Row:O', axis=None, sort='descending'),
     color=alt.Color('Result:N', scale=result_palette,
@@ -467,33 +439,21 @@ squares = alt.Chart(label_df_full).mark_point(
     tooltip=[alt.Tooltip('Group:N', title='Category'),
              alt.Tooltip('Result:N', title='Outcome'),
              alt.Tooltip('N_total:Q', title='Sample size', format=',')]
-).transform_filter('datum.icon_index >= 0')
-
-labels = alt.Chart(label_df_full).mark_text(
-    fontSize=9.5, fontWeight='bold', align='left', dx=2
-).encode(
-    x=alt.X('Col:O', axis=None),
-    y=alt.Y('Row:O', axis=None, sort='descending'),
-    text=alt.Text('label:N'),
-    color=alt.Color('Result:N', scale=result_palette, legend=None),
-).transform_filter('datum.icon_index < 0')
+).properties(width=240, height=220)
 
 pictograph = (
-    alt.layer(squares, labels)
-    .properties(width=210, height=250)
-    .facet(
+    inner.facet(
         facet=alt.Facet('Group:N', title=None, sort=group_order,
                         header=alt.Header(labelFontSize=13, labelFontWeight='bold',
                                           labelLimit=320, labelPadding=12,
                                           labelColor=TITLE_COLOR)),
         columns=4,
-        data=label_df_full,
     )
-    .resolve_scale(x='shared', y='shared', color='shared')
+    .resolve_scale(x='shared', y='shared')
     .properties(
         title=alt.TitleParams(
             text='Of Every 100 New Chicago Food Businesses, How Many Pass on Day One?',
-            subtitle='Each square = 1% of first-ever inspections. Labels show exact % per outcome.',
+            subtitle='Each square = 1% of first-ever inspections. Green = pass, amber = conditions, red = fail.',
             fontSize=15, subtitleFontSize=11, subtitleColor=SUBTITLE_CLR,
             anchor='start', color=TITLE_COLOR,
         )

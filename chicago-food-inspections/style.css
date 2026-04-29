@@ -54,12 +54,16 @@ h1 {
 }
 
 figure.viz { margin: 2rem 0 0; padding: 0; width: 100%; }
-figure.viz iframe { display: block; width: 100%; border: none; background: transparent; overflow: hidden; }
+figure.viz iframe {
+  display: block; width: 100%; border: none;
+  background: transparent; overflow: hidden;
+  scrolling: no;
+}
 figure.viz:not(.viz-hero):not(.viz-tall) iframe { height: 420px; }
-figure.viz-hero iframe  { height: 600px; }
-figure.viz-tall iframe  { height: 750px; }
+figure.viz-hero iframe   { height: 600px; }
+figure.viz-tall iframe   { height: 750px; }
 #overview-timeline iframe { height: 260px; }
-#pictograph iframe { height: 580px; }
+#pictograph iframe        { height: 420px; }
 
 iframe { overflow: hidden; }
 

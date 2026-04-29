@@ -438,7 +438,7 @@ inner = alt.Chart(pictograph_df).mark_point(filled=True, size=110, shape='square
     tooltip=[alt.Tooltip('Group:N', title='Category'),
              alt.Tooltip('Result:N', title='Outcome'),
              alt.Tooltip('N_total:Q', title='Sample size', format=',')]
-).properties(width=180, height=200)
+).properties(width=220, height=220)
 
 pictograph = (
     inner.facet(

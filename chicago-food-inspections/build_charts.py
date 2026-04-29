@@ -429,7 +429,7 @@ result_palette = alt.Scale(
     domain=['Pass', 'Pass w/ Conditions', 'Fail'],
     range=['#27ae60', '#f39c12', ACCENT_RED]
 )
-inner = alt.Chart(pictograph_df).mark_point(filled=True, size=40, shape='square').encode(
+inner = alt.Chart(pictograph_df).mark_point(filled=True, size=10, shape='square').encode(
     x=alt.X('Col:O', axis=None),
     y=alt.Y('Row:O', axis=None, sort='descending'),
     color=alt.Color('Result:N', scale=result_palette,

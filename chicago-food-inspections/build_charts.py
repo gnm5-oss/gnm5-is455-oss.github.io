@@ -429,7 +429,7 @@ result_palette = alt.Scale(
     domain=['Pass', 'Pass w/ Conditions', 'Fail'],
     range=['#27ae60', '#f39c12', ACCENT_RED]
 )
-inner = alt.Chart(pictograph_df).mark_point(filled=True, size=50, shape='square').encode(
+inner = alt.Chart(pictograph_df).mark_point(filled=True, size=40, shape='square').encode(
     x=alt.X('Col:O', axis=None),
     y=alt.Y('Row:O', axis=None, sort='descending'),
     color=alt.Color('Result:N', scale=result_palette,
@@ -438,7 +438,7 @@ inner = alt.Chart(pictograph_df).mark_point(filled=True, size=50, shape='square'
     tooltip=[alt.Tooltip('Group:N',   title='Category'),
              alt.Tooltip('Result:N',  title='Outcome'),
              alt.Tooltip('N_total:Q', title='Total in group', format=',')]
-).properties(width=220, height=185)
+).properties(width=260, height=185)
 
 pictograph = (
     inner.facet(

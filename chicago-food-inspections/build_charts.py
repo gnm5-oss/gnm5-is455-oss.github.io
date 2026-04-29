@@ -430,18 +430,6 @@ result_palette = alt.Scale(
     range=['#27ae60', '#f39c12', ACCENT_RED]
 )
 
-# summary data for labels below each panel
-summary = (
-    pictograph_df.groupby(['Group', 'Result', 'N_total'])
-    .size()
-    .reset_index(name='Squares')
-    .rename(columns={'Squares': 'Pct'})
-)
-summary = summary[summary['Group'].isin(group_order)].copy()
-summary['label'] = summary.apply(
-    lambda r: f"{r['Result']}: {r['Pct']}%", axis=1
-)
-
 inner = alt.Chart(pictograph_df).mark_point(filled=True, size=110, shape='square').encode(
     x=alt.X('Col:O', axis=None),
     y=alt.Y('Row:O', axis=None, sort='descending'),
@@ -453,18 +441,27 @@ inner = alt.Chart(pictograph_df).mark_point(filled=True, size=110, shape='square
              alt.Tooltip('N_total:Q', title='Sample size', format=',')]
 ).properties(width=210, height=210)
 
-# text labels below each panel
-label_layer = alt.Chart(summary).mark_text(
-    align='left', fontSize=11, fontWeight='bold'
+# summary % per result per group as text overlay at bottom
+summary = (
+    pictograph_df.groupby(['Group', 'Result'])
+    .size()
+    .reset_index(name='Pct')
+)
+summary = summary[summary['Group'].isin(group_order)].copy()
+summary['Row'] = 10
+summary['Col'] = summary.groupby('Group').cumcount()
+summary['label'] = summary.apply(lambda r: f"{r['Result']}: {r['Pct']}%", axis=1)
+
+text_layer = alt.Chart(summary).mark_text(
+    fontSize=9.5, fontWeight='bold', align='left', dy=4
 ).encode(
-    x=alt.X('Result:N', axis=None,
-            scale=alt.Scale(domain=['Fail', 'Pass w/ Conditions', 'Pass'])),
-    y=alt.Y('Pct:Q', axis=None, scale=alt.Scale(domain=[0, 120])),
+    x=alt.X('Col:O', axis=None),
+    y=alt.Y('Row:O', axis=None),
     text=alt.Text('label:N'),
     color=alt.Color('Result:N', scale=result_palette, legend=None),
-).properties(width=210, height=40)
+)
 
-combined = alt.vconcat(inner, label_layer, spacing=4)
+combined = alt.layer(inner, text_layer).properties(width=210, height=240)
 
 pictograph = (
     combined.facet(
@@ -474,11 +471,11 @@ pictograph = (
                                           labelColor=TITLE_COLOR)),
         columns=4,
     )
-    .resolve_scale(x='independent', y='independent', color='shared')
+    .resolve_scale(x='shared', y='shared', color='shared')
     .properties(
         title=alt.TitleParams(
             text='Of Every 100 New Chicago Food Businesses, How Many Pass on Day One?',
-            subtitle='Each square = 1% of first-ever inspections. Numbers below show exact % for each outcome.',
+            subtitle='Each square = 1% of first-ever inspections. Labels show exact % per outcome.',
             fontSize=15, subtitleFontSize=11, subtitleColor=SUBTITLE_CLR,
             anchor='start', color=TITLE_COLOR,
         )

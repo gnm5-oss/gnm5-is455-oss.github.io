@@ -140,7 +140,7 @@ document.getElementById('yr-to').addEventListener('change', redraw);
 function filtered() {
   const fy = +document.getElementById('yr-from').value;
   const ty = +document.getElementById('yr-to').value;
-  return ALL_DATA.filter(d => active.has(d['Facility Type']) && d.Year >= fy && d.Year <= ty);
+  return ALL_DATA.filter(d => active.has(d['Facility Type']) && +d.Year >= fy && +d.Year <= ty);
 }
 
 const SPEC = {

@@ -226,7 +226,7 @@ document.getElementById('yr-to').addEventListener('change', redraw);
 function filtered() {
   const fy = +document.getElementById('yr-from').value;
   const ty = +document.getElementById('yr-to').value;
-  return ALL_DATA.filter(d => active.has(d['Facility Type']) && d.Year >= fy && d.Year <= ty);
+  return ALL_DATA.filter(d => active.has(d['Facility Type']) && +d.Year >= fy && +d.Year <= ty);
 }
 
 const SPEC = {
@@ -320,8 +320,8 @@ overview_line = (
     )
 )
 annotations = pd.DataFrame([
-    {'Year': 2018, 'label': '2018: New CDPH rules', 'y_pos': 92},
-    {'Year': 2020, 'label': '2020: COVID-19',        'y_pos': 78}
+    {'Year': '2018', 'label': '2018: New CDPH rules', 'y_pos': 92},
+    {'Year': '2020', 'label': '2020: COVID-19',        'y_pos': 78}
 ])
 ann_rules = alt.Chart(annotations).mark_rule(
     color=ACCENT_RED, strokeDash=[4,4], strokeWidth=1.5

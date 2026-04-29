@@ -231,7 +231,7 @@ function filtered() {
 
 const SPEC = {
   $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
-  width: 'container', height: 420,
+  width: 'container', height: 480,
   data: { name: 'table' },
   params: [{ name: 'xDomain', value: YEAR_DOM }],
   mark: { type:'line', point:{ size:70, filled:true }, strokeWidth:2.5 },
@@ -336,7 +336,7 @@ ann_text = alt.Chart(annotations).mark_text(
 ).encode(x='Year:O', y=alt.Y('y_pos:Q'), text='label:N')
 
 overview = theme(
-    (overview_line + ann_rules + ann_text).properties(width='container', height=200),
+    (overview_line + ann_rules + ann_text).properties(width='container', height=220),
     title='Citywide Average Pass Rate (2010–2025)',
     subtitle='Weighted average across all 8 facility types. The 2018 cliff and 2020 COVID dip are clearly visible.',
 )
@@ -376,7 +376,7 @@ drop_labels = alt.Chart(before_after).mark_text(
     text=alt.Text('Drop:Q', format='.1f')
 )
 dumbbell = theme(
-    (bars + dots + drop_labels).properties(width='container', height=320),
+    (bars + dots + drop_labels).properties(width='container', height=350),
     title='Two Years, One Rule Change',
     subtitle='Pass rates collapsed between 2017 and 2019. Numbers = percentage-point drop.',
 )
@@ -429,6 +429,19 @@ result_palette = alt.Scale(
     domain=['Pass', 'Pass w/ Conditions', 'Fail'],
     range=['#27ae60', '#f39c12', ACCENT_RED]
 )
+
+# summary data for labels below each panel
+summary = (
+    pictograph_df.groupby(['Group', 'Result', 'N_total'])
+    .size()
+    .reset_index(name='Squares')
+    .rename(columns={'Squares': 'Pct'})
+)
+summary = summary[summary['Group'].isin(group_order)].copy()
+summary['label'] = summary.apply(
+    lambda r: f"{r['Result']}: {r['Pct']}%", axis=1
+)
+
 inner = alt.Chart(pictograph_df).mark_point(filled=True, size=110, shape='square').encode(
     x=alt.X('Col:O', axis=None),
     y=alt.Y('Row:O', axis=None, sort='descending'),
@@ -438,21 +451,34 @@ inner = alt.Chart(pictograph_df).mark_point(filled=True, size=110, shape='square
     tooltip=[alt.Tooltip('Group:N', title='Category'),
              alt.Tooltip('Result:N', title='Outcome'),
              alt.Tooltip('N_total:Q', title='Sample size', format=',')]
-).properties(width=220, height=220)
+).properties(width=210, height=210)
+
+# text labels below each panel
+label_layer = alt.Chart(summary).mark_text(
+    align='left', fontSize=11, fontWeight='bold'
+).encode(
+    x=alt.X('Result:N', axis=None,
+            scale=alt.Scale(domain=['Fail', 'Pass w/ Conditions', 'Pass'])),
+    y=alt.Y('Pct:Q', axis=None, scale=alt.Scale(domain=[0, 120])),
+    text=alt.Text('label:N'),
+    color=alt.Color('Result:N', scale=result_palette, legend=None),
+).properties(width=210, height=40)
+
+combined = alt.vconcat(inner, label_layer, spacing=4)
 
 pictograph = (
-    inner.facet(
+    combined.facet(
         facet=alt.Facet('Group:N', title=None, sort=group_order,
                         header=alt.Header(labelFontSize=13, labelFontWeight='bold',
                                           labelLimit=320, labelPadding=12,
                                           labelColor=TITLE_COLOR)),
         columns=4,
     )
-    .resolve_scale(x='shared', y='shared')
+    .resolve_scale(x='independent', y='independent', color='shared')
     .properties(
         title=alt.TitleParams(
             text='Of Every 100 New Chicago Food Businesses, How Many Pass on Day One?',
-            subtitle='Each square = 1% of first-ever inspections. Green = pass, amber = conditions, red = fail.',
+            subtitle='Each square = 1% of first-ever inspections. Numbers below show exact % for each outcome.',
             fontSize=15, subtitleFontSize=11, subtitleColor=SUBTITLE_CLR,
             anchor='start', color=TITLE_COLOR,
         )

@@ -57,15 +57,31 @@ figure.viz { margin: 2rem 0 0; padding: 0; width: 100%; }
 figure.viz iframe {
   display: block; width: 100%; border: none;
   background: transparent; overflow: hidden;
-  scrolling: no;
 }
-figure.viz:not(.viz-hero):not(.viz-tall) iframe { height: 420px; }
-figure.viz-hero iframe   { height: 600px; }
-figure.viz-tall iframe   { height: 750px; }
-#overview-timeline iframe { height: 260px; }
-#pictograph iframe        { height: 420px; }
+
+/* responsive heights using clamp(min, preferred, max) */
+figure.viz:not(.viz-hero):not(.viz-tall) iframe { height: clamp(350px, 45vw, 520px); }
+figure.viz-hero iframe    { height: clamp(500px, 58vw, 720px); }
+figure.viz-tall iframe    { height: clamp(550px, 70vw, 900px); }
+#overview-timeline iframe { height: clamp(220px, 25vw, 320px); }
+#before-after iframe      { height: clamp(380px, 40vw, 480px); }
+#heatmap iframe           { height: clamp(380px, 42vw, 520px); }
+#pictograph iframe        { height: clamp(380px, 40vw, 480px); }
+#uninspected-bars iframe  { height: clamp(300px, 32vw, 400px); }
 
 iframe { overflow: hidden; }
+
+/* mobile */
+@media (max-width: 600px) {
+  figure.viz:not(.viz-hero):not(.viz-tall) iframe { height: 380px; }
+  figure.viz-hero iframe    { height: 480px; }
+  figure.viz-tall iframe    { height: 500px; }
+  #overview-timeline iframe { height: 260px; }
+  #before-after iframe      { height: 420px; }
+  #heatmap iframe           { height: 420px; }
+  #pictograph iframe        { height: 600px; }
+  #uninspected-bars iframe  { height: 340px; }
+}
 
 figcaption {
   font-family: Arial, Helvetica, sans-serif;

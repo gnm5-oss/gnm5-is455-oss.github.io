@@ -233,11 +233,12 @@ const SPEC = {
   $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
   width: 'container', height: 420,
   data: { name: 'table' },
+  params: [{ name: 'xDomain', value: YEAR_DOM }],
   mark: { type:'line', point:{ size:70, filled:true }, strokeWidth:2.5 },
   encoding: {
     x: {
       field:'Year', type:'ordinal', title:'Year',
-      scale: { domain: YEAR_DOM },
+      scale: { domain: { signal: 'xDomain' } },
       axis:{ labelAngle:-45, titlePadding:12, labelFontSize:11,
              titleFontSize:13, titleFontWeight:'bold', gridColor:'#E8E6E0' }
     },
@@ -271,6 +272,10 @@ vegaEmbed('#vis', SPEC, { actions:false, renderer:'svg' })
 
 function redraw() {
   if (!vegaView) return;
+  const fy = +document.getElementById('yr-from').value;
+  const ty = +document.getElementById('yr-to').value;
+  const domainFiltered = YEAR_DOM.filter(y => +y >= fy && +y <= ty);
+  vegaView.signal('xDomain', domainFiltered);
   vegaView.change('table', vega.changeset().remove(()=>true).insert(filtered())).run();
 }
 </script>
@@ -433,7 +438,7 @@ inner = alt.Chart(pictograph_df).mark_point(filled=True, size=110, shape='square
     tooltip=[alt.Tooltip('Group:N', title='Category'),
              alt.Tooltip('Result:N', title='Outcome'),
              alt.Tooltip('N_total:Q', title='Sample size', format=',')]
-).properties(width=240, height=240)
+).properties(width=180, height=200)
 
 pictograph = (
     inner.facet(
@@ -441,7 +446,7 @@ pictograph = (
                         header=alt.Header(labelFontSize=13, labelFontWeight='bold',
                                           labelLimit=320, labelPadding=12,
                                           labelColor=TITLE_COLOR)),
-        columns=2,
+        columns=4,
     )
     .resolve_scale(x='shared', y='shared')
     .properties(

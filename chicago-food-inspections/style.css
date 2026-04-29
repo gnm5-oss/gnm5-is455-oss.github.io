@@ -55,7 +55,8 @@ h1 {
 
 figure.viz { margin: 2rem 0 0; padding: 0; width: 100%; }
 figure.viz iframe { display: block; width: 100%; border: none; background: transparent; }
-figure.viz:not(.viz-hero):not(.viz-tall) iframe { height: clamp(380px, 45vw, 560px); }
+figure.viz:not(.viz-hero):not(.viz-tall) iframe { height: clamp(280px, 35vw, 380px); }
+#overview-timeline iframe { height: 280px; }
 figure.viz-hero iframe  { height: clamp(520px, 55vw, 700px); }
 figure.viz-tall iframe  { height: clamp(520px, 65vw, 820px); }
 

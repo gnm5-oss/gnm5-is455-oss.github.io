@@ -81,6 +81,7 @@ def theme(chart, title=None, subtitle=None, fs=15, sfs=11, height=None):
 # ============================================================
 # CHART 1 — Interactive line chart with PILLS + year filter
 # ============================================================
+yearly_pass['Year'] = yearly_pass['Year'].astype(str)
 yearly_pass_records = yearly_pass.to_dict(orient='records')
 
 CHART1_HTML = r"""<!DOCTYPE html>
@@ -168,7 +169,6 @@ const YEAR_DOM   = __YEARDOMAIN__;
 let active   = new Set(ALL_FACS);
 let vegaView = null;
 
-// build pills
 const pillRow = document.getElementById('pills');
 ALL_FACS.forEach(fac => {
   const btn = document.createElement('button');
@@ -233,56 +233,35 @@ const SPEC = {
   $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
   width: 'container', height: 420,
   data: { name: 'table' },
-  layer: [
-    {
-      mark: { type:'line', point:{ size:70, filled:true }, strokeWidth:2.5 },
-      encoding: {
-        x: {
-          field:'Year', type:'ordinal', title:'Year',
-          scale: { domain: YEAR_DOM },
-          axis:{ labelAngle:-45, titlePadding:12, labelFontSize:11, titleFontSize:13, titleFontWeight:'bold', gridColor:'#E8E6E0' }
-        },
-        y: {
-          field:'Pass Rate', type:'quantitative', title:'Pass Rate (%)',
-          scale:{ domain:[0,100] },
-          axis:{ tickCount:6, labelFontSize:11, titleFontSize:13, titleFontWeight:'bold', gridColor:'#E8E6E0' }
-        },
-        color: {
-          field:'Facility Type', type:'nominal',
-          scale:{ domain:__DOMAIN__, range:__RANGE__ },
-          title:'Facility Type',
-          legend:{ orient:'right', offset:10, labelFontSize:11, titleFontSize:12,
-                   symbolStrokeWidth:3, fillColor:'#fff', strokeColor:'#e8e6e0', padding:8, cornerRadius:4 }
-        },
-        tooltip:[
-          { field:'Facility Type', type:'nominal',     title:'Facility Type' },
-          { field:'Year',          type:'ordinal',     title:'Year' },
-          { field:'Pass Rate',     type:'quantitative',title:'Pass Rate (%)', format:'.1f' },
-          { field:'Total',         type:'quantitative',title:'# Inspections', format:',' }
-        ]
-      }
+  mark: { type:'line', point:{ size:70, filled:true }, strokeWidth:2.5 },
+  encoding: {
+    x: {
+      field:'Year', type:'ordinal', title:'Year',
+      scale: { domain: YEAR_DOM },
+      axis:{ labelAngle:-45, titlePadding:12, labelFontSize:11,
+             titleFontSize:13, titleFontWeight:'bold', gridColor:'#E8E6E0' }
     },
-    {
-      data: { values:[
-        { Year:'2018', y:96, label:'← July 2018: CDPH rule change' },
-        { Year:'2020', y:88, label:'← 2020: COVID-19' }
-      ]},
-      layer:[
-        {
-          mark:{ type:'rule', color:'#c0392b', strokeDash:[5,3], strokeWidth:1.5 },
-          encoding:{ x:{ field:'Year', type:'ordinal', scale:{ domain:YEAR_DOM } } }
-        },
-        {
-          mark:{ type:'text', align:'left', dx:5, fontSize:10.5, color:'#c0392b', fontStyle:'italic' },
-          encoding:{
-            x:{ field:'Year', type:'ordinal', scale:{ domain:YEAR_DOM } },
-            y:{ field:'y', type:'quantitative', scale:{ domain:[0,100] } },
-            text:{ field:'label', type:'nominal' }
-          }
-        }
-      ]
-    }
-  ],
+    y: {
+      field:'Pass Rate', type:'quantitative', title:'Pass Rate (%)',
+      scale:{ domain:[0,100] },
+      axis:{ tickCount:6, labelFontSize:11, titleFontSize:13,
+             titleFontWeight:'bold', gridColor:'#E8E6E0' }
+    },
+    color: {
+      field:'Facility Type', type:'nominal',
+      scale:{ domain:__DOMAIN__, range:__RANGE__ },
+      title:'Facility Type',
+      legend:{ orient:'right', offset:10, labelFontSize:11, titleFontSize:12,
+               symbolStrokeWidth:3, fillColor:'#fff', strokeColor:'#e8e6e0',
+               padding:8, cornerRadius:4 }
+    },
+    tooltip:[
+      { field:'Facility Type', type:'nominal',     title:'Facility Type' },
+      { field:'Year',          type:'ordinal',     title:'Year' },
+      { field:'Pass Rate',     type:'quantitative',title:'Pass Rate (%)', format:'.1f' },
+      { field:'Total',         type:'quantitative',title:'# Inspections', format:',' }
+    ]
+  },
   config:{ background:'#FAFAF7', view:{ fill:'#FAFAF7', stroke:null }, axis:{ gridColor:'#E8E6E0' } }
 };
 
@@ -433,64 +412,54 @@ print("[OK] heatmap.html")
 
 
 # ============================================================
-# CHART 4 — First inspection outcomes stacked bar
+# CHART 4 — Pictograph (first-inspection outcomes)
 # ============================================================
-first_insp_summary = (
-    pictograph_df.groupby(['Group', 'Result'])
-    .size()
-    .reset_index(name='Percentage')
-)
 group_order = [
     'All Chicago Food Businesses',
     'Retail Food (restaurants, grocery, bakery)',
     'Mobile Food (trucks & carts)',
     'Wholesale Food',
 ]
-first_insp_summary = first_insp_summary[
-    first_insp_summary['Group'].isin(group_order)
-].copy()
-
-stacked = alt.Chart(first_insp_summary).mark_bar(
-    cornerRadiusTopRight=3, cornerRadiusBottomRight=3
-).encode(
-    x=alt.X('Percentage:Q', title='% of First Inspections', scale=alt.Scale(domain=[0,100])),
-    y=alt.Y('Group:N', sort=group_order, title=None,
-            axis=alt.Axis(labelLimit=300, labelFontSize=12)),
-    color=alt.Color('Result:N',
-                    sort=['Pass', 'Pass w/ Conditions', 'Fail'],
-                    scale=alt.Scale(
-                        domain=['Pass', 'Pass w/ Conditions', 'Fail'],
-                        range=['#27ae60', '#f39c12', ACCENT_RED]
-                    ),
-                    legend=alt.Legend(title='Outcome', orient='top',
-                                      labelFontSize=12, symbolSize=150)),
-    order=alt.Order('Result:N', sort='ascending'),
-    tooltip=[
-        alt.Tooltip('Group:N',      title='Category'),
-        alt.Tooltip('Result:N',     title='Outcome'),
-        alt.Tooltip('Percentage:Q', title='% of inspections', format='.0f'),
-    ]
+result_palette = alt.Scale(
+    domain=['Pass', 'Pass w/ Conditions', 'Fail'],
+    range=['#27ae60', '#f39c12', ACCENT_RED]
 )
+inner = alt.Chart(pictograph_df).mark_point(filled=True, size=110, shape='square').encode(
+    x=alt.X('Col:O', axis=None),
+    y=alt.Y('Row:O', axis=None, sort='descending'),
+    color=alt.Color('Result:N', scale=result_palette,
+                    legend=alt.Legend(title=None, orient='top',
+                                      labelFontSize=12, symbolSize=130)),
+    tooltip=[alt.Tooltip('Group:N', title='Category'),
+             alt.Tooltip('Result:N', title='Outcome'),
+             alt.Tooltip('N_total:Q', title='Sample size', format=',')]
+).properties(width=240, height=240)
 
-text_labels = alt.Chart(first_insp_summary).mark_text(
-    align='center', baseline='middle', fontSize=11,
-    fontWeight='bold', color='white'
-).encode(
-    x=alt.X('Percentage:Q'),
-    y=alt.Y('Group:N', sort=group_order),
-    detail='Result:N',
-    text=alt.Text('Percentage:Q', format='.0f'),
-    order=alt.Order('Result:N', sort='ascending'),
-).transform_filter(alt.datum.Percentage > 8)
-
-first_insp_chart = theme(
-    alt.layer(stacked, text_labels).properties(width='container', height=220),
-    title='Of Every 100 New Chicago Food Businesses, How Many Pass on Day One?',
-    subtitle='Stacked bars show % of first-ever inspections ending in each outcome, by license category.',
+pictograph = (
+    inner.facet(
+        facet=alt.Facet('Group:N', title=None, sort=group_order,
+                        header=alt.Header(labelFontSize=13, labelFontWeight='bold',
+                                          labelLimit=320, labelPadding=12,
+                                          labelColor=TITLE_COLOR)),
+        columns=2,
+    )
+    .resolve_scale(x='shared', y='shared')
+    .properties(
+        title=alt.TitleParams(
+            text='Of Every 100 New Chicago Food Businesses, How Many Pass on Day One?',
+            subtitle='Each square = 1% of first-ever inspections. Green = pass, amber = conditions, red = fail.',
+            fontSize=15, subtitleFontSize=11, subtitleColor=SUBTITLE_CLR,
+            anchor='start', color=TITLE_COLOR,
+        )
+    )
+    .configure_view(stroke=None, fill=BACKGROUND)
+    .configure_title(fontSize=15, subtitleFontSize=11, subtitleColor=SUBTITLE_CLR,
+                     anchor='start', color=TITLE_COLOR)
+    .configure_legend(labelFontSize=12, titleFontSize=12,
+                      fillColor='#fff', strokeColor='#e8e6e0', padding=8, cornerRadius=4)
 )
-first_insp_chart.save(chart_path('pictograph_first_inspection.html'))
-print("[OK] pictograph_first_inspection.html (stacked bar)")
-
+pictograph.save(chart_path('pictograph_first_inspection.html'))
+print("[OK] pictograph_first_inspection.html")
 
 # ============================================================
 # CHART 5 — Active-uninspected bars

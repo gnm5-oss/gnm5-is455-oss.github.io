@@ -438,7 +438,7 @@ inner = alt.Chart(pictograph_df).mark_point(filled=True, size=80, shape='square'
     tooltip=[alt.Tooltip('Group:N',   title='Category'),
              alt.Tooltip('Result:N',  title='Outcome'),
              alt.Tooltip('N_total:Q', title='Total in group', format=',')]
-).properties(width=240, height=185)
+).properties(width=380, height=220)
 
 pictograph = (
     inner.facet(
@@ -446,7 +446,7 @@ pictograph = (
                         header=alt.Header(labelFontSize=13, labelFontWeight='bold',
                                           labelLimit=320, labelPadding=12,
                                           labelColor=TITLE_COLOR)),
-        columns=4,
+        columns=2,
     )
     .resolve_scale(x='shared', y='shared')
     .properties(

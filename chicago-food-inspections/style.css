@@ -67,7 +67,7 @@ figure.viz-tall iframe    { height: clamp(550px, 70vw, 900px); }
 #before-after iframe      { height: clamp(380px, 40vw, 480px); }
 #heatmap iframe           { height: clamp(380px, 42vw, 520px); }
 #pictograph { max-width: 100vw; margin-left: -1rem; margin-right: -1rem; }
-#pictograph iframe { height: clamp(380px, 38vw, 460px); }
+#pictograph iframe { height: clamp(560px, 55vw, 660px); }
 #uninspected-bars iframe  { height: clamp(300px, 32vw, 400px); }
 
 iframe { overflow: hidden; }

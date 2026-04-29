@@ -430,7 +430,35 @@ result_palette = alt.Scale(
     range=['#27ae60', '#f39c12', ACCENT_RED]
 )
 
-inner = alt.Chart(pictograph_df).mark_point(filled=True, size=110, shape='square').encode(
+# compute summary % per group+result
+pct_summary = (
+    pictograph_df.groupby(['Group', 'Result'])
+    .size()
+    .reset_index(name='Pct')
+)
+
+# create label rows: place them at Row=11 (below the grid)
+label_rows = []
+for _, row in pct_summary.iterrows():
+    label_rows.append({
+        'Group':    row['Group'],
+        'Result':   row['Result'],
+        'Col':      0,
+        'Row':      11,
+        'N_total':  0,
+        'icon_index': -1,
+        'Position': -1,
+        'label':    f"{row['Result']}: {int(row['Pct'])}%"
+    })
+label_df = pd.DataFrame(label_rows)
+
+# add label column to main df (empty for normal rows)
+pictograph_df['label'] = ''
+label_df_full = pd.concat([pictograph_df, label_df], ignore_index=True)
+
+squares = alt.Chart(label_df_full).mark_point(
+    filled=True, size=110, shape='square'
+).encode(
     x=alt.X('Col:O', axis=None),
     y=alt.Y('Row:O', axis=None, sort='descending'),
     color=alt.Color('Result:N', scale=result_palette,
@@ -439,37 +467,27 @@ inner = alt.Chart(pictograph_df).mark_point(filled=True, size=110, shape='square
     tooltip=[alt.Tooltip('Group:N', title='Category'),
              alt.Tooltip('Result:N', title='Outcome'),
              alt.Tooltip('N_total:Q', title='Sample size', format=',')]
-).properties(width=210, height=210)
+).transform_filter('datum.icon_index >= 0')
 
-# summary % per result per group as text overlay at bottom
-summary = (
-    pictograph_df.groupby(['Group', 'Result'])
-    .size()
-    .reset_index(name='Pct')
-)
-summary = summary[summary['Group'].isin(group_order)].copy()
-summary['Row'] = 10
-summary['Col'] = summary.groupby('Group').cumcount()
-summary['label'] = summary.apply(lambda r: f"{r['Result']}: {r['Pct']}%", axis=1)
-
-text_layer = alt.Chart(summary).mark_text(
-    fontSize=9.5, fontWeight='bold', align='left', dy=4
+labels = alt.Chart(label_df_full).mark_text(
+    fontSize=9.5, fontWeight='bold', align='left', dx=2
 ).encode(
     x=alt.X('Col:O', axis=None),
-    y=alt.Y('Row:O', axis=None),
+    y=alt.Y('Row:O', axis=None, sort='descending'),
     text=alt.Text('label:N'),
     color=alt.Color('Result:N', scale=result_palette, legend=None),
-)
-
-combined = alt.layer(inner, text_layer).properties(width=210, height=240)
+).transform_filter('datum.icon_index < 0')
 
 pictograph = (
-    combined.facet(
+    alt.layer(squares, labels)
+    .properties(width=210, height=250)
+    .facet(
         facet=alt.Facet('Group:N', title=None, sort=group_order,
                         header=alt.Header(labelFontSize=13, labelFontWeight='bold',
                                           labelLimit=320, labelPadding=12,
                                           labelColor=TITLE_COLOR)),
         columns=4,
+        data=label_df_full,
     )
     .resolve_scale(x='shared', y='shared', color='shared')
     .properties(

@@ -10,7 +10,6 @@
 </head>
 
 <body>
-
   <article class="story">
 
     <header class="hero">
@@ -29,9 +28,6 @@
       </p>
     </header>
 
-    <!-- ============================================================ -->
-    <!-- SECTION 1 — The Big Picture                                  -->
-    <!-- ============================================================ -->
     <section class="prose">
       <p>
         Every year, the Chicago Department of Public Health (CDPH) sends inspectors to
@@ -48,19 +44,23 @@
       </p>
     </section>
 
-    <!-- CHART 1 — Central Dashboard -->
+    <!-- CHART 1 — Central Interactive Chart -->
     <figure class="viz viz-hero" id="main-dashboard">
-      <iframe src="charts/main_dashboard.html" loading="lazy" title="Pass rates by facility type, 2010-2025"></iframe>
+      <iframe src="charts/main_dashboard.html" loading="lazy"
+        title="Pass rates by facility type, 2010-2025"></iframe>
+    </figure>
+
+    <!-- CHART 1b — Citywide Average Timeline -->
+    <figure class="viz" id="overview-timeline">
+      <iframe src="charts/overview_timeline.html" loading="lazy"
+        title="Citywide average pass rate timeline"></iframe>
       <figcaption>
-        <strong>Explore it yourself.</strong> Each panel is one facility type.
-        Drag a range on the bottom timeline to focus the panels on a specific window
-        of years. Hover any point for the exact pass rate and inspection count.
+        Citywide weighted average pass rate across all 8 facility types.
+        The 2018–2019 cliff and 2020 COVID dip are visible across every facility type above.
       </figcaption>
     </figure>
 
-    <!-- ============================================================ -->
-    <!-- SECTION 2 — The July 2018 Cliff                              -->
-    <!-- ============================================================ -->
+    <!-- SECTION 2 -->
     <section class="prose">
       <h2>The July 2018 Cliff</h2>
       <p>
@@ -78,7 +78,6 @@
       </p>
     </section>
 
-    <!-- CHART 2 — Dumbbell (Before/After) -->
     <figure class="viz" id="before-after">
       <iframe src="charts/before_after.html" loading="lazy" title="Pass rates 2017 vs 2019"></iframe>
       <figcaption>
@@ -89,9 +88,7 @@
       </figcaption>
     </figure>
 
-    <!-- ============================================================ -->
-    <!-- SECTION 3 — Different Sectors, Different Recoveries          -->
-    <!-- ============================================================ -->
+    <!-- SECTION 3 -->
     <section class="prose">
       <h2>Different Sectors, Different Recoveries</h2>
       <p>
@@ -113,7 +110,6 @@
       </p>
     </section>
 
-    <!-- CHART 3 — Heatmap -->
     <figure class="viz" id="heatmap">
       <iframe src="charts/heatmap.html" loading="lazy" title="Pass rate heatmap by facility type and year"></iframe>
       <figcaption>
@@ -124,9 +120,7 @@
       </figcaption>
     </figure>
 
-    <!-- ============================================================ -->
-    <!-- SECTION 4 — What Happens on Day One?                         -->
-    <!-- ============================================================ -->
+    <!-- SECTION 4 -->
     <section class="prose">
       <h2>What Happens on Day One?</h2>
       <p>
@@ -156,7 +150,6 @@
       </p>
     </section>
 
-    <!-- CHART 4 — Pictograph -->
     <figure class="viz" id="pictograph">
       <iframe src="charts/pictograph_first_inspection.html" loading="lazy"
         title="Pictograph of first-inspection outcomes by category"></iframe>
@@ -168,9 +161,7 @@
       </figcaption>
     </figure>
 
-    <!-- ============================================================ -->
-    <!-- SECTION 5 — The Inspection Blind Spots                       -->
-    <!-- ============================================================ -->
+    <!-- SECTION 5 -->
     <section class="prose">
       <h2>The Inspection Blind Spots</h2>
       <p>
@@ -200,7 +191,6 @@
       </p>
     </section>
 
-    <!-- CHART 5 — Active Uninspected Bars -->
     <figure class="viz" id="uninspected-bars">
       <iframe src="charts/active_uninspected.html" loading="lazy"
         title="Percentage of active food licenses never inspected by category"></iframe>
@@ -212,9 +202,7 @@
       </figcaption>
     </figure>
 
-    <!-- ============================================================ -->
-    <!-- SECTION 6 — Where the Gaps Are                               -->
-    <!-- ============================================================ -->
+    <!-- SECTION 6 -->
     <section class="prose">
       <h2>Where in Chicago Are the Gaps?</h2>
       <p>
@@ -236,7 +224,6 @@
       </p>
     </section>
 
-    <!-- CHART 6 — ZIP Map -->
     <figure class="viz viz-tall" id="zip-map">
       <iframe src="charts/chicago_inspection_map.html" loading="lazy"
         title="Map of uninspected retail food businesses by Chicago ZIP code"></iframe>
@@ -247,9 +234,7 @@
       </figcaption>
     </figure>
 
-    <!-- ============================================================ -->
-    <!-- SECTION 7 — What This Means                                  -->
-    <!-- ============================================================ -->
+    <!-- SECTION 7 -->
     <section class="prose">
       <h2>What This Means for Chicago Diners</h2>
       <p>
@@ -280,9 +265,7 @@
       </p>
     </section>
 
-    <!-- ============================================================ -->
-    <!-- METHODOLOGY                                                  -->
-    <!-- ============================================================ -->
+    <!-- METHODOLOGY -->
     <section class="methodology">
       <h2>Methodology &amp; Sources</h2>
 
@@ -290,25 +273,23 @@
       <p>
         <strong>Chicago Food Inspections</strong>. City of Chicago Open Data Portal,
         maintained by the Chicago Department of Public Health.
-        <a href="https://data.cityofchicago.org/Health-Human-Services/Food-Inspections/4ijn-s7e5" target="_blank"
-          rel="noopener">data.cityofchicago.org/Health-Human-Services/Food-Inspections/4ijn-s7e5</a>.
-        Accessed 2026. 309,344 raw records spanning January 2010 through April 2026; filtered
-        to 246,990 records with valid Pass/Fail/Pass-w-Conditions outcomes, valid risk
-        levels, and complete years (2010–2025), restricted to the 8 most-inspected
-        facility types.
+        <a href="https://data.cityofchicago.org/Health-Human-Services/Food-Inspections/4ijn-s7e5"
+          target="_blank" rel="noopener">data.cityofchicago.org</a>.
+        Accessed 2026. 309,344 raw records spanning January 2010 through April 2026;
+        filtered to 246,990 records with valid Pass/Fail/Pass-w-Conditions outcomes,
+        valid risk levels, and complete years (2010–2025), restricted to the 8
+        most-inspected facility types.
       </p>
 
       <h3>Contextual dataset</h3>
       <p>
         <strong>Chicago Business Licenses</strong>. City of Chicago Open Data Portal.
         <a href="https://data.cityofchicago.org/Community-Economic-Development/Business-Licenses/r5kz-chrr"
-          target="_blank"
-          rel="noopener">data.cityofchicago.org/Community-Economic-Development/Business-Licenses/r5kz-chrr</a>.
-        Filtered server-side via the Socrata API to 14 food-related license categories
-        (Retail Food Establishment, Wholesale Food, Mobile Food, Pop-Up Food, Shared Kitchen,
-        Food Peddler, and Navy Pier Food Vendor variants). Used to compute first-inspection
-        outcomes by license type, identify long-active licenses that have never been
-        inspected, and map uninspected retail food businesses by ZIP code.
+          target="_blank" rel="noopener">data.cityofchicago.org</a>.
+        Filtered server-side via the Socrata API to 14 food-related license categories.
+        Used to compute first-inspection outcomes by license type, identify long-active
+        licenses that have never been inspected, and map uninspected retail food
+        businesses by ZIP code.
       </p>
 
       <h3>Geographic boundaries</h3>
@@ -331,7 +312,7 @@
         Jupyter notebook:
         <a href="notebooks/FP_Part2_IS445.ipynb" target="_blank" rel="noopener">FP_Part2_IS445.ipynb</a>
         (also viewable directly on
-        <a href="https://github.com/hari200698/hari200698.github.io/blob/main/projects/chicago-food-inspections/notebooks/FP_Part2_IS445.ipynb"
+        <a href="https://github.com/gnm5-oss/gnm5-is455-oss.github.io/blob/main/chicago-food-inspections/notebooks/FP_Part2_IS445.ipynb"
           target="_blank" rel="noopener">GitHub</a>).
       </p>
 
@@ -343,11 +324,9 @@
     </section>
 
     <footer class="story-footer">
-      <p>IS 445 · Final Project Part 3 · Spring 2026</p>
+      <p>IS 445 · Final Project Part 3 · Spring 2026 · Gayatri Mahindrakar &amp; Harisankar Kartha</p>
     </footer>
 
   </article>
-
 </body>
-
 </html>

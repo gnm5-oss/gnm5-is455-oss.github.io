@@ -67,7 +67,7 @@ figure.viz-tall iframe    { height: clamp(550px, 70vw, 900px); }
 #before-after iframe      { height: clamp(380px, 40vw, 480px); }
 #heatmap iframe           { height: clamp(380px, 42vw, 520px); }
 #pictograph { max-width: 100vw; margin-left: -1rem; margin-right: -1rem; text-align: center; }
-#pictograph iframe { margin: 0 auto; display: block; }
+#pictograph iframe { margin: 0 auto; display: block; height: 780px; }
 #uninspected-bars iframe  { height: clamp(300px, 32vw, 400px); }
 
 iframe { overflow: hidden; }
@@ -80,7 +80,7 @@ iframe { overflow: hidden; }
   #overview-timeline iframe { height: 260px; }
   #before-after iframe      { height: 420px; }
   #heatmap iframe           { height: 420px; }
-  #pictograph iframe        { height: 600px; }
+#pictograph iframe { height: 860px; }
   #uninspected-bars iframe  { height: 340px; }
 }
 

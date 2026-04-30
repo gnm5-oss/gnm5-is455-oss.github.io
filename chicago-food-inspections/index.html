@@ -1,68 +1,325 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="en">
+
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2575.6">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 12.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
-    p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000; min-height: 14.0px}
-    p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
-    span.s1 {font-kerning: none}
-    span.s2 {text-decoration: underline ; font-kerning: none; color: #0000dc; -webkit-text-stroke: 0px #0000dc}
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chicago's 2018 Pass-Rate Cliff — A Data Story</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
-<p class="p1"><span class="s1">Food Safety · Chicago · 2010–2025</span></p>
-<h1 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Chicago Bakeries Didn't Get Dirtier in 2019.<br>
-The Rulebook Just Got Stricter.</b><b></b></span></h1>
-<p class="p1"><span class="s1">By <b>Gayatri Mahindrakar</b> &amp; <b>Harisankar Kartha</b> · IS 445, Group 5</span></p>
-<p class="p1"><span class="s1">Between 2017 and 2019, the share of Chicago bakery inspections ending in a clean pass plummeted from roughly 70% to under 19%. Restaurants and grocery stores fell almost as far. The cause wasn't a citywide hygiene collapse — it was a single regulatory change that almost no one outside of the Chicago Department of Public Health noticed at the time.</span></p>
-<p class="p1"><span class="s1">Every year, the Chicago Department of Public Health (CDPH) sends inspectors to tens of thousands of food establishments — restaurants, grocery stores, schools, bakeries, daycares, long-term-care facilities. Each visit ends in one of three outcomes: <i>Pass</i>, <i>Pass with Conditions</i>, or <i>Fail</i>. Across the 246,990 inspections we analyzed from 2010 through 2025, restaurants alone account for roughly 175,000 of them — nearly six times more than any other facility type.</span></p>
-<p class="p1"><span class="s1">For most of the 2010s, somewhere around two-thirds of those inspections came back as straight passes. Then 2018 happened.</span></p>
-<p class="p3"><span class="s1"></span><br></p>
-<p class="p4"><span class="s1">Citywide weighted average pass rate across all 8 facility types. The 2018–2019 cliff and 2020 COVID dip are visible across every facility type above.</span></p>
-<h2 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>The July 2018 Cliff</b><b></b></span></h2>
-<p class="p1"><span class="s1">In July 2018, CDPH overhauled how its inspectors classify violations. Conditions that had previously been logged as minor were reclassified as "priority" or "priority foundation" issues — the kind that, under the new framework, could push an inspection from <i>Pass</i> into <i>Pass with Conditions</i> or even <i>Fail</i>. Nothing about the underlying cleanliness of Chicago kitchens changed overnight. The yardstick did.</span></p>
-<p class="p1"><span class="s1">The result, visible in nearly every panel above, is a synchronized collapse of pass rates between 2017 and 2019. The chart below makes the size of the drop concrete.</span></p>
-<p class="p4"><span class="s1">Each row compares one facility type's pass rate in 2017 (green dot) to 2019 (red dot). Bakeries lost the most ground — over 48 percentage points in two years. Schools, which face the strictest baseline scrutiny year-round, fell the least.</span></p>
-<h2 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Different Sectors, Different Recoveries</b><b></b></span></h2>
-<p class="p1"><span class="s1">By 2025, most facility types had clawed back to roughly where they sat before the rule change — restaurants and bakeries hovering in the low 60s, childcare facilities in the mid-70s, schools and long-term-care somewhere in between. What's striking is that the pre-2018 hierarchy reappeared almost intact: the sectors that ran high before the cliff (Children's Services Facilities, the two daycare categories) are running high again, and the sectors that ran lower (Restaurants, Grocery Stores, Long Term Care) are still lower. The cliff was universal, but the recovery wasn't a level-up — it was a return to baseline.</span></p>
-<p class="p1"><span class="s1">A second, smaller dip in 2020 cuts across every facility type. That one's easier to explain: COVID-19 collapsed the volume of in-person inspections, and the inspections that did happen tended to focus on the most at-risk establishments. Both effects show up clearly in the heatmap below.</span></p>
-<p class="p4"><span class="s1">Each cell shows the pass rate for one facility type in one year. The 2018–2019 column is a wall of red across nearly every row — a structural change, not a behavioral one. The gradual recovery from left to right after 2020 shows facilities adapting to the stricter framework.</span></p>
-<h2 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>What Happens on Day One?</b><b></b></span></h2>
-<p class="p1"><span class="s1">The charts above track every inspection over 15 years. But what about a food business's <i>very first</i> visit from an inspector? The first inspection is often the most consequential — it shapes an owner's perception of the regulatory system and sets the baseline for their operating standards. By linking inspections to business licenses issued by the City of Chicago, we can isolate each establishment's inaugural inspection and ask: <b>how many new food businesses pass on their first try?</b><b></b></span></p>
-<p class="p1"><span class="s1">The answer, across all categories, is roughly half. Of every 100 new Chicago food businesses that open their doors and face their first CDPH inspection, about <b>54 pass cleanly</b>, 12 pass with conditions attached, and <b>34 fail outright</b>. One in three new food businesses fails its very first health inspection.</span></p>
-<p class="p1"><span class="s1">The breakdown varies sharply by license type. Mobile food vendors — food trucks and carts — fare better, with 59 out of 100 passing cleanly. Wholesale food establishments tell the opposite story: only 48 out of 100 pass, while <b>51 fail</b> — a majority of new wholesale businesses can't clear the bar on their first attempt.</span></p>
-<p class="p4"><span class="s1">Each square represents 1% of first-ever inspections in that category. Green squares are clean passes, amber is pass with conditions, and red is fail. The more red you see, the harder that category finds it to pass on day one.</span></p>
-<h2 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>The Inspection Blind Spots</b><b></b></span></h2>
-<p class="p1"><span class="s1">Pass rates tell you how scored inspections turn out. They say nothing about the establishments that <i>never get scored at all</i>. To find those blind spots, we compared every food-related business license the city has issued against CDPH's actual inspection records. For licenses that have been active for at least two years — long enough that the city has had ample opportunity to send an inspector — we asked a simple question: <b>has this business ever been inspected?</b><b></b></span></p>
-<p class="p1"><span class="s1">For Retail Food establishments — the restaurants, grocery stores, and bakeries that most Chicagoans interact with daily — the answer is reassuring: only <b>114 out of 9,213</b> long-active licenses (about 1.2%) have never seen an inspector. That's a testament to CDPH's focus on the highest-traffic food businesses.</span></p>
-<p class="p1"><span class="s1">But the picture changes dramatically in other categories. Among wholesale food businesses, <b>301 out of 347</b> active licenses — nearly 87% — have never received a single inspection. Shared kitchen supplemental licenses are even worse: <b>73 of 81</b> (90%) have never been inspected. These aren't consumer-facing storefronts, but they sit in the supply chain that feeds Chicago's restaurant economy, and they operate under the same licensing framework.</span></p>
-<p class="p4"><span class="s1">Each bar shows the share of long-active food licenses (held for 2+ years) that have never received a CDPH inspection. Retail food is well-covered at 1.2%, but wholesale and supplemental kitchen categories have massive gaps — the vast majority have never been inspected.</span></p>
-<h2 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Where in Chicago Are the Gaps?</b><b></b></span></h2>
-<p class="p1"><span class="s1">Even within Retail Food — the category where CDPH's coverage is strongest — the 114 uninspected businesses aren't scattered evenly. The map below places every long-active retail food license that has never been inspected as a dot on Chicago's ZIP code map, with each ZIP shaded by the share of its active licenses that slipped through.</span></p>
-<p class="p1"><span class="s1">The pattern reveals geographic clustering. ZIPs in parts of the West and South sides — including <b>60608</b> (Pilsen/Bridgeport, 11 uninspected out of 276 licenses), <b>60639</b> (Belmont Cragin, 10 of 278), and <b>60619</b> (Chatham/Avalon Park, 7 of 161) — show the highest uninspected rates, consistently above 3.5%. Most North Side ZIPs, by contrast, sit below 1%. The gaps are small in absolute terms, but they are not random — they track with the same neighborhoods that tend to have fewer city resources directed toward code enforcement more broadly.</span></p>
-<p class="p4"><span class="s1">Each dot is a long-active retail food business that has never been inspected. The ZIP fill color ranges from light (near-zero uninspected) to dark red (4%+ uninspected). Hover over any ZIP to see the exact counts.</span></p>
-<h2 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>What This Means for Chicago Diners</b><b></b></span></h2>
-<p class="p1"><span class="s1">A reader scanning a 2024 inspection report and a 2014 report side-by-side could be forgiven for thinking Chicago's food scene got measurably worse. It didn't — at least not by the underlying measure. What changed is the definition of "good enough." That distinction matters: pass-rate trends are increasingly used by journalists, ratings sites, and even insurance underwriters as a proxy for food safety. When the definition shifts under everyone's feet without a corresponding public communication campaign, the data tells a story the city didn't intend to tell.</span></p>
-<p class="p1"><span class="s1">Meanwhile, the coverage story adds a second wrinkle. CDPH does an admirable job reaching the city's restaurants and grocery stores — fewer than 2% of long-active retail food licenses have gone uninspected. But entire categories of the food supply chain — wholesale distributors, supplemental kitchens — operate for years without any oversight. And even within the well-covered retail category, the gaps aren't evenly distributed: they cluster in neighborhoods on the West and South sides that have historically received less public investment.</span></p>
-<p class="p1"><span class="s1">The good news: even under the stricter post-2018 framework, the majority of Chicago's food establishments still pass. The not-as-good news: where you eat — and what kind of business prepares your food — still predicts how closely the city is watching.</span></p>
-<h2 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Methodology &amp; Sources</b><b></b></span></h2>
-<h3 style="margin: 0.0px 0.0px 14.0px 0.0px; font: 14.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Primary dataset</b><b></b></span></h3>
-<p class="p1"><span class="s1"><b>Chicago Food Inspections</b>. City of Chicago Open Data Portal, maintained by the Chicago Department of Public Health. <a href="https://data.cityofchicago.org/Health-Human-Services/Food-Inspections/4ijn-s7e5"><span class="s2">data.cityofchicago.org</span></a>. Accessed 2026. 309,344 raw records spanning January 2010 through April 2026; filtered to 246,990 records with valid Pass/Fail/Pass-w-Conditions outcomes, valid risk levels, and complete years (2010–2025), restricted to the 8 most-inspected facility types.</span></p>
-<h3 style="margin: 0.0px 0.0px 14.0px 0.0px; font: 14.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Contextual dataset</b><b></b></span></h3>
-<p class="p1"><span class="s1"><b>Chicago Business Licenses</b>. City of Chicago Open Data Portal. <a href="https://data.cityofchicago.org/Community-Economic-Development/Business-Licenses/r5kz-chrr"><span class="s2">data.cityofchicago.org</span></a>. Filtered server-side via the Socrata API to 14 food-related license categories. Used to compute first-inspection outcomes, identify long-active licenses never inspected, and map uninspected retail food businesses by ZIP code.</span></p>
-<h3 style="margin: 0.0px 0.0px 14.0px 0.0px; font: 14.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Geographic boundaries</b><b></b></span></h3>
-<p class="p1"><span class="s1"><b>Chicago ZIP Code Boundaries</b>. GeoJSON boundary file sourced from the City of Chicago, hosted via <a href="https://github.com/lseemann/Chicago_ZIP_Codes"><span class="s2">lseemann/Chicago_ZIP_Codes</span></a> on GitHub.</span></p>
-<h3 style="margin: 0.0px 0.0px 14.0px 0.0px; font: 14.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Regulatory background</b><b></b></span></h3>
-<p class="p1"><span class="s1">Chicago Department of Public Health, Food Protection Division. Public announcement of revised violation classification framework, July 2018.</span></p>
-<h3 style="margin: 0.0px 0.0px 14.0px 0.0px; font: 14.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Analysis notebook</b><b></b></span></h3>
-<p class="p1"><span class="s1">The full filtering, aggregation, and chart-generation pipeline is available as a Jupyter notebook: <a href="https://github.com/gnm5-oss/gnm5-is455-oss.github.io/blob/main/chicago-food-inspections/notebooks/Part3%20Darft.ipynb"><span class="s2">FP_Part3_IS445.ipynb</span></a> (also viewable directly on <a href="https://github.com/gnm5-oss/gnm5-is455-oss.github.io/blob/main/chicago-food-inspections/notebooks/FP_Part2_IS445.ipynb"><span class="s2">GitHub</span></a>).</span></p>
-<h3 style="margin: 0.0px 0.0px 14.0px 0.0px; font: 14.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Tools</b><b></b></span></h3>
-<p class="p1"><span class="s1">Python 3.11, pandas, Altair / Vega-Lite for interactive visualizations, GitHub Pages for hosting.</span></p>
-<p class="p1"><span class="s1">IS 445 · Final Project Part 3 · Spring 2026 · Gayatri Mahindrakar &amp; Harisankar Kartha</span></p>
+  <article class="story">
+
+    <header class="hero">
+      <p class="kicker">Food Safety · Chicago · 2010–2025</p>
+      <h1>Chicago Bakeries Didn't Get Dirtier in 2019.<br />The Rulebook Just Got Stricter.</h1>
+      <p class="byline">
+        By <strong>Gayatri Mahindrakar</strong> &amp; <strong>Harisankar Kartha</strong>
+        · IS&nbsp;445, Group 5
+      </p>
+      <p class="dek">
+        Between 2017 and 2019, the share of Chicago bakery inspections ending in a clean
+        pass plummeted from roughly 70&percnt; to under 19&percnt;. Restaurants and grocery stores fell
+        almost as far. The cause wasn't a citywide hygiene collapse — it was a single
+        regulatory change that almost no one outside of the Chicago Department of Public
+        Health noticed at the time.
+      </p>
+    </header>
+
+    <section class="prose">
+      <p>
+        Every year, the Chicago Department of Public Health (CDPH) sends inspectors to
+        tens of thousands of food establishments — restaurants, grocery stores, schools,
+        bakeries, daycares, long-term-care facilities. Each visit ends in one of three
+        outcomes: <em>Pass</em>, <em>Pass with Conditions</em>, or <em>Fail</em>. Across
+        the 246,990 inspections we analyzed from 2010 through 2025, restaurants alone
+        account for roughly 175,000 of them — nearly six times more than any other
+        facility type.
+      </p>
+      <p>
+        For most of the 2010s, somewhere around two-thirds of those inspections came
+        back as straight passes. Then 2018 happened.
+      </p>
+    </section>
+
+    <!-- CHART 1 — Central Interactive Chart -->
+    <figure class="viz viz-hero" id="main-dashboard">
+      <iframe scrolling="no" src="charts/main_dashboard.html" loading="lazy"
+        title="Pass rates by facility type, 2010-2025"></iframe>
+    </figure>
+
+    <!-- CHART 1b — Citywide Average Timeline -->
+    <figure class="viz" id="overview-timeline">
+      <iframe scrolling="no" src="charts/overview_timeline.html" loading="lazy"
+        title="Citywide average pass rate timeline"></iframe>
+      <figcaption>
+        Citywide weighted average pass rate across all 8 facility types.
+        The 2018–2019 cliff and 2020 COVID dip are visible across every facility type above.
+      </figcaption>
+    </figure>
+
+    <section class="prose">
+      <h2>The July 2018 Cliff</h2>
+      <p>
+        In July 2018, CDPH overhauled how its inspectors classify violations.
+        Conditions that had previously been logged as minor were reclassified as
+        "priority" or "priority foundation" issues — the kind that, under the new
+        framework, could push an inspection from <em>Pass</em> into <em>Pass with
+          Conditions</em> or even <em>Fail</em>. Nothing about the underlying
+        cleanliness of Chicago kitchens changed overnight. The yardstick did.
+      </p>
+      <p>
+        The result, visible in nearly every panel above, is a synchronized collapse
+        of pass rates between 2017 and 2019. The chart below makes the size of the
+        drop concrete.
+      </p>
+    </section>
+
+    <figure class="viz" id="before-after">
+      <iframe scrolling="no" src="charts/before_after.html" loading="lazy"
+        title="Pass rates 2017 vs 2019"></iframe>
+      <figcaption>
+        Each row compares one facility type's pass rate in 2017 (green dot) to 2019
+        (red dot). Bakeries lost the most ground — over 48 percentage points in two
+        years. Schools, which face the strictest baseline scrutiny year-round, fell
+        the least.
+      </figcaption>
+    </figure>
+
+    <section class="prose">
+      <h2>Different Sectors, Different Recoveries</h2>
+      <p>
+        By 2025, most facility types had clawed back to roughly where they sat
+        before the rule change — restaurants and bakeries hovering in the low 60s,
+        childcare facilities in the mid-70s, schools and long-term-care somewhere
+        in between. What's striking is that the pre-2018 hierarchy reappeared
+        almost intact: the sectors that ran high before the cliff (Children's
+        Services Facilities, the two daycare categories) are running high again,
+        and the sectors that ran lower (Restaurants, Grocery Stores, Long Term
+        Care) are still lower. The cliff was universal, but the recovery wasn't
+        a level-up — it was a return to baseline.
+      </p>
+      <p>
+        A second, smaller dip in 2020 cuts across every facility type. That one's
+        easier to explain: COVID-19 collapsed the volume of in-person inspections,
+        and the inspections that did happen tended to focus on the most at-risk
+        establishments. Both effects show up clearly in the heatmap below.
+      </p>
+    </section>
+
+    <figure class="viz" id="heatmap">
+      <iframe scrolling="no" src="charts/heatmap.html" loading="lazy"
+        title="Pass rate heatmap by facility type and year"></iframe>
+      <figcaption>
+        Each cell shows the pass rate for one facility type in one year. The
+        2018–2019 column is a wall of red across nearly every row — a structural
+        change, not a behavioral one. The gradual recovery from left to right
+        after 2020 shows facilities adapting to the stricter framework.
+      </figcaption>
+    </figure>
+
+    <section class="prose">
+      <h2>What Happens on Day One?</h2>
+      <p>
+        The charts above track every inspection over 15 years. But what about a
+        food business's <em>very first</em> visit from an inspector? The
+        first inspection is often the most consequential — it shapes an owner's
+        perception of the regulatory system and sets the baseline for their
+        operating standards. By linking inspections to business licenses issued by
+        the City of Chicago, we can isolate each establishment's inaugural
+        inspection and ask: <strong>how many new food businesses pass on their
+          first try?</strong>
+      </p>
+      <p>
+        The answer, across all categories, is roughly half. Of every 100 new
+        Chicago food businesses that open their doors and face their first CDPH
+        inspection, about <strong>54 pass cleanly</strong>, 12 pass with conditions
+        attached, and <strong>34 fail outright</strong>. One in three new food
+        businesses fails its very first health inspection.
+      </p>
+      <p>
+        The breakdown varies sharply by license type. Mobile food vendors — food
+        trucks and carts — fare better, with 59 out of 100 passing cleanly.
+        Wholesale food establishments tell the opposite story: only 48 out of 100
+        pass, while <strong>51 fail</strong> — a majority of new wholesale
+        businesses can't clear the bar on their first attempt.
+      </p>
+    </section>
+
+    <figure class="viz" id="pictograph">
+      <iframe scrolling="no" src="charts/pictograph_first_inspection.html" loading="lazy"
+        title="First inspection outcomes by category"></iframe>
+      <figcaption>
+        Each square represents 1&percnt; of first-ever inspections in that category.
+        Green squares are clean passes, amber is pass with conditions, and red
+        is fail. The more red you see, the harder that category finds it to pass
+        on day one.
+      </figcaption>
+    </figure>
+
+    <section class="prose">
+      <h2>The Inspection Blind Spots</h2>
+      <p>
+        Pass rates tell you how scored inspections turn out. They say nothing about
+        the establishments that <em>never get scored at all</em>. To find those
+        blind spots, we compared every food-related business license the city has
+        issued against CDPH's actual inspection records. For licenses that have been
+        active for at least two years — long enough that the city has had ample
+        opportunity to send an inspector — we asked a simple question:
+        <strong>has this business ever been inspected?</strong>
+      </p>
+      <p>
+        For Retail Food establishments — the restaurants, grocery stores, and
+        bakeries that most Chicagoans interact with daily — the answer is
+        reassuring: only <strong>114 out of 9,213</strong> long-active licenses
+        (about 1.2&percnt;) have never seen an inspector. That's a testament to CDPH's
+        focus on the highest-traffic food businesses.
+      </p>
+      <p>
+        But the picture changes dramatically in other categories. Among wholesale
+        food businesses, <strong>301 out of 347</strong> active licenses — nearly
+        87&percnt; — have never received a single inspection. Shared kitchen
+        supplemental licenses are even worse: <strong>73 of 81</strong> (90&percnt;)
+        have never been inspected. These aren't consumer-facing storefronts, but
+        they sit in the supply chain that feeds Chicago's restaurant economy, and
+        they operate under the same licensing framework.
+      </p>
+    </section>
+
+    <figure class="viz" id="uninspected-bars">
+      <iframe scrolling="no" src="charts/active_uninspected.html" loading="lazy"
+        title="Percentage of active food licenses never inspected by category"></iframe>
+      <figcaption>
+        Each bar shows the share of long-active food licenses (held for 2+ years)
+        that have never received a CDPH inspection. Retail food is well-covered
+        at 1.2&percnt;, but wholesale and supplemental kitchen categories have
+        massive gaps — the vast majority have never been inspected.
+      </figcaption>
+    </figure>
+
+    <section class="prose">
+      <h2>Where in Chicago Are the Gaps?</h2>
+      <p>
+        Even within Retail Food — the category where CDPH's coverage is strongest — the
+        114 uninspected businesses aren't scattered evenly. The map below places every
+        long-active retail food license that has never been inspected as a dot on
+        Chicago's ZIP code map, with each ZIP shaded by the share of its active licenses
+        that slipped through.
+      </p>
+      <p>
+        The pattern reveals geographic clustering. ZIPs in parts of the West and South
+        sides — including <strong>60608</strong> (Pilsen/Bridgeport, 11 uninspected out
+        of 276 licenses), <strong>60639</strong> (Belmont Cragin, 10 of 278), and
+        <strong>60619</strong> (Chatham/Avalon Park, 7 of 161) — show the highest
+        uninspected rates, consistently above 3.5&percnt;. Most North Side ZIPs, by contrast,
+        sit below 1&percnt;. The gaps are small in absolute terms, but they are not random — they
+        track with the same neighborhoods that tend to have fewer city resources directed
+        toward code enforcement more broadly.
+      </p>
+    </section>
+
+    <figure class="viz viz-tall" id="zip-map">
+      <iframe scrolling="no" src="charts/chicago_inspection_map.html" loading="lazy"
+        title="Map of uninspected retail food businesses by Chicago ZIP code"></iframe>
+      <figcaption>
+        Each dot is a long-active retail food business that has never been inspected.
+        The ZIP fill color ranges from light (near-zero uninspected) to dark red
+        (4&percnt;+ uninspected). Hover over any ZIP to see the exact counts.
+      </figcaption>
+    </figure>
+
+    <section class="prose">
+      <h2>What This Means for Chicago Diners</h2>
+      <p>
+        A reader scanning a 2024 inspection report and a 2014 report side-by-side
+        could be forgiven for thinking Chicago's food scene got measurably worse.
+        It didn't — at least not by the underlying measure. What changed is the
+        definition of "good enough." That distinction matters: pass-rate trends
+        are increasingly used by journalists, ratings sites, and even insurance
+        underwriters as a proxy for food safety. When the definition shifts under
+        everyone's feet without a corresponding public communication campaign, the
+        data tells a story the city didn't intend to tell.
+      </p>
+      <p>
+        Meanwhile, the coverage story adds a second wrinkle. CDPH does an admirable
+        job reaching the city's restaurants and grocery stores — fewer than 2&percnt; of
+        long-active retail food licenses have gone uninspected. But entire categories
+        of the food supply chain — wholesale distributors, supplemental kitchens —
+        operate for years without any oversight. And even within the well-covered
+        retail category, the gaps aren't evenly distributed: they cluster in
+        neighborhoods on the West and South sides that have historically received
+        less public investment.
+      </p>
+      <p>
+        The good news: even under the stricter post-2018 framework, the majority of
+        Chicago's food establishments still pass. The not-as-good news: where you
+        eat — and what kind of business prepares your food — still predicts how
+        closely the city is watching.
+      </p>
+    </section>
+
+    <section class="methodology">
+      <h2>Methodology &amp; Sources</h2>
+
+      <h3>Primary dataset</h3>
+      <p>
+        <strong>Chicago Food Inspections</strong>. City of Chicago Open Data Portal,
+        maintained by the Chicago Department of Public Health.
+        <a href="https://data.cityofchicago.org/Health-Human-Services/Food-Inspections/4ijn-s7e5"
+          target="_blank" rel="noopener">data.cityofchicago.org</a>.
+        Accessed 2026. 309,344 raw records spanning January 2010 through April 2026;
+        filtered to 246,990 records with valid Pass/Fail/Pass-w-Conditions outcomes,
+        valid risk levels, and complete years (2010–2025), restricted to the 8
+        most-inspected facility types.
+      </p>
+
+      <h3>Contextual dataset</h3>
+      <p>
+        <strong>Chicago Business Licenses</strong>. City of Chicago Open Data Portal.
+        <a href="https://data.cityofchicago.org/Community-Economic-Development/Business-Licenses/r5kz-chrr"
+          target="_blank" rel="noopener">data.cityofchicago.org</a>.
+        Filtered server-side via the Socrata API to 14 food-related license categories.
+        Used to compute first-inspection outcomes, identify long-active licenses never
+        inspected, and map uninspected retail food businesses by ZIP code.
+      </p>
+
+      <h3>Geographic boundaries</h3>
+      <p>
+        <strong>Chicago ZIP Code Boundaries</strong>. GeoJSON boundary file sourced from
+        the City of Chicago, hosted via
+        <a href="https://github.com/lseemann/Chicago_ZIP_Codes" target="_blank"
+          rel="noopener">lseemann/Chicago_ZIP_Codes</a> on GitHub.
+      </p>
+
+      <h3>Regulatory background</h3>
+      <p>
+        Chicago Department of Public Health, Food Protection Division. Public
+        announcement of revised violation classification framework, July 2018.
+      </p>
+
+      <h3>Analysis notebook</h3>
+      <p>
+        The full filtering, aggregation, and chart-generation pipeline is available as a
+        Jupyter notebook:
+        <a href="notebooks/FP_Part2_IS445.ipynb" target="_blank"
+          rel="noopener">FP_Part2_IS445.ipynb</a>
+        (also viewable directly on
+        <a href="https://github.com/gnm5-oss/gnm5-is455-oss.github.io/blob/main/chicago-food-inspections/notebooks/FP_Part2_IS445.ipynb"
+          target="_blank" rel="noopener">GitHub</a>).
+      </p>
+
+      <h3>Tools</h3>
+      <p>
+        Python 3.11, pandas, Altair / Vega-Lite for interactive visualizations,
+        GitHub Pages for hosting.
+      </p>
+    </section>
+
+    <footer class="story-footer">
+      <p>IS 445 · Final Project Part 3 · Spring 2026 · Gayatri Mahindrakar &amp; Harisankar Kartha</p>
+    </footer>
+
+  </article>
 </body>
 </html>

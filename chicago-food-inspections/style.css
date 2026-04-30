@@ -20,7 +20,7 @@ body { margin: 0; padding: 0; background: #FAFAF7; color: #111; -webkit-font-smo
 
 h1 {
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(1.9rem, 4vw, 3.1rem);
+  font-size: clamp(1.5rem, 2.8vw, 2.4rem);
   line-height: 1.13; margin: 0 0 1rem; color: #111;
 }
 
